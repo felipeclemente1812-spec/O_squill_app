@@ -3,10 +3,12 @@ import { AntDesign, FontAwesome, SimpleLineIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { View } from "react-native";
+import { StatusBar } from "expo-status-bar";
 
 
 const Layout = () => {
   return (
+    <>
     <Tabs
       screenOptions={{
         tabBarStyle: {
@@ -81,6 +83,8 @@ const Layout = () => {
         }}
       />
     </Tabs>
+    <StatusBar style="light"/>
+    </>
   );
 };
 
