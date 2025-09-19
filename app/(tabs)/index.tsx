@@ -4,6 +4,11 @@ import { Stack } from 'expo-router';
 import React from "react";
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { PieChart } from "react-native-gifted-charts";
+import ExpenseBlock from '@/components/ExpenseBlock'
+import expensList from '@/data/expenses.json';
+import { ExpenseType } from "@/types";
+
+const expenseList = expensList as ExpenseType[]
 
 const Page = () => {
   const pieData = [
@@ -43,14 +48,15 @@ const Page = () => {
               R$1475.<Text style={{ fontSize: 22, fontWeight: 400 }}>00</Text>
             </Text>
           </View>
-            <View>
+            <View style={{paddingVertical: 0 ,alignItems:'center'}}>
               <PieChart
           data={pieData}
           donut
           showGradient
+          focusOnPress
           sectionAutoFocus
-          radius={90}
-          innerRadius={60}
+          radius={70}
+          innerRadius={50}
           innerCircleColor={Colors.black}
           centerLabelComponent={() => {
             return (
@@ -59,13 +65,14 @@ const Page = () => {
                   style={{fontSize: 22, color: 'white', fontWeight: 'bold'}}>
                   47%
                 </Text>
-                <Text style={{fontSize: 14, color: 'white'}}>Excellent</Text>
               </View>
             );
           }}
         />
             </View>
           </View>
+
+          <ExpenseBlock expensList={expenseList} />
         </ScrollView>
       </View>
     </>
