@@ -16,5 +16,11 @@
         "name":"Saving",
         "amount":"200.55",
         "percentage":"13"
+        },
+        {
+        "id":"4",
+        "name":"miscienous",
+        "amount":"100.11",
+        "percentage":"7"
         }
 ]
