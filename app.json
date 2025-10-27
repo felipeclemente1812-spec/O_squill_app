@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FINANCEAPP",
-    "slug": "FINANCEAPP", 
+    "slug": "FINANCEAPP",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,11 +38,15 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "expoRouterAppRoot": "./app"
     }
   }
 }

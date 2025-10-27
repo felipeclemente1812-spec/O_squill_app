@@ -86,6 +86,9 @@ const Layout = () => {
     <StatusBar style="light"/>
     </>
   );
+
+  
+
 };
 
 export default Layout;
