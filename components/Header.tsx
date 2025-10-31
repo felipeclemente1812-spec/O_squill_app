@@ -20,13 +20,13 @@ const Header = () => {
       <View style={styles.wrapper}>
         <View style={styles.userInfoWrapper}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/250?u=12" }}
-            style={styles.userImag}
-          />
+  source={require('@/assets/icons/semft.jpg')}
+  style={{ width:50, height: 50, borderRadius: 1000}}
+/>
           <View style={styles.userTxtWrapper}>
-            <Text style={[styles.userText, { fontSize: 12 }]}>Hi, Jenny</Text>
+            <Text style={[styles.userText, { fontSize: 12 }]}>App teste Header</Text>
             <Text style={[styles.userText, { fontSize: 16 }]}>
-              Your <Text style={styles.boldText}>Budget</Text>
+              app <Text style={styles.boldText}>ODEIO A ETEC</Text>
             </Text>
           </View>
         </View>
@@ -34,7 +34,7 @@ const Header = () => {
         {/* 🔹 Botões lado a lado */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <TouchableOpacity onPress={() => {}} style={styles.bntWrapper}>
-            <Text style={styles.bntText}>My Transactions</Text>
+            <Text style={styles.bntText}>Minhas Transações</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={resetarTudo} style={[styles.bntWrapper, styles.resetBtn]}>

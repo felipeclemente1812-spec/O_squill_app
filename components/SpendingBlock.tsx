@@ -108,13 +108,16 @@ const SpendingBlock = () => {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("quest");
 
   // Carrega despesas
-  React.useEffect(() => {
-    const loadExpenses = async () => {
-      const data = await AsyncStorage.getItem(STORAGE_KEY);
-      if (data) setExpenses(JSON.parse(data));
-    };
-    loadExpenses();
-  }, []);
+React.useEffect(() => {
+  const loadExpenses = async () => {
+    const data = await AsyncStorage.getItem(STORAGE_KEY);
+    if (data) setExpenses(JSON.parse(data));
+  };
+
+  const interval = setInterval(loadExpenses, 2000); // Atualiza a cada 2 segundos
+  return () => clearInterval(interval);
+}, []);
+
 
   const openEditModal = (expense: ExpenseType | null = null) => {
     if (expense) {
@@ -188,22 +191,32 @@ const SpendingBlock = () => {
   const [filteredExpenses, setFilteredExpenses] = React.useState<ExpenseType[]>([]);
 
   React.useEffect(() => {
-    const filtered = expenses.filter((exp) => {
+  const filtered = expenses
+    .filter((exp) => {
       const [day, month, year] = exp.date.split("/").map(Number);
       const fullYear = year < 100 ? 2000 + year : year;
+
+      // Verifica se pertence ao mês selecionado
       const isSelectedMonth =
         month - 1 === selectedMonth.month && fullYear === selectedMonth.year;
 
-      const isRecentMonth = selectedMonth.month === months[0].month;
-      if (isRecentMonth) {
-        return isSelectedMonth && !isCurrentWeek(exp.date);
-      }
-
       return isSelectedMonth;
+    })
+    .sort((a, b) => {
+      // Converte as datas para objetos Date e ordena do mais recente para o mais antigo
+      const [dayA, monthA, yearA] = a.date.split("/").map(Number);
+      const [dayB, monthB, yearB] = b.date.split("/").map(Number);
+
+      const dateA = new Date(2000 + (yearA < 100 ? yearA : yearA), monthA - 1, dayA);
+      const dateB = new Date(2000 + (yearB < 100 ? yearB : yearB), monthB - 1, dayB);
+
+      return dateB.getTime() - dateA.getTime(); // mais recentes primeiro
     });
 
-    setFilteredExpenses(filtered);
-  }, [expenses, selectedMonth]);
+  setFilteredExpenses(filtered);
+}, [expenses, selectedMonth]);
+
+
 
   // Total do mês atual
   const totalMonth = filteredExpenses.reduce(
