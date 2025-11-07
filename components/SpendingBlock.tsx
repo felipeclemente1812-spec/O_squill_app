@@ -2,6 +2,7 @@ import Colors from "@/constants/Colors";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
+import * as Icons from "@/constants/icons";
 import {
   Modal,
   ScrollView,
@@ -9,9 +10,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import { ExpenseType } from "./ExpenseBlock";
 
 import {
   car,
@@ -28,38 +28,53 @@ import {
   tv,
 } from "@/constants/icons";
 
-const STORAGE_KEY = "@expenses";
+export interface ItemType {
+  id: string;
+  name: string;
+  amount: string;
+  date: string;
+  category: string;
+  percentage?: string;
+}
 
-const categoryIcons: Record<string, any> = {
-  house,
-  car,
-  fone,
-  food,
-  shop,
-  clothes,
-  health,
-  game,
-  tech,
-  gym,
-  tv,
-  quest,
+interface SpendingBlockProps {
+  storageKey: string;
+  title: string;
+}
+
+// 🔹 Define ícones e cores de cada categoria
+const allCategories = {
+  // despesas
+  house: { icon: Icons.house, color: Colors.house },
+  car: { icon: Icons.car, color: Colors.car },
+  fone: { icon: Icons.fone, color: Colors.fone },
+  food: { icon: Icons.food, color: Colors.food },
+  shop: { icon: Icons.shop, color: Colors.shop },
+  clothes: { icon: Icons.clothes, color: Colors.clothes },
+  health: { icon: Icons.health, color: Colors.health },
+  game: { icon: Icons.game, color: Colors.game },
+  tech: { icon: Icons.tech, color: Colors.tech },
+  gym: { icon: Icons.gym, color: Colors.gym },
+  tv: { icon: Icons.tv, color: Colors.tv },
+  quest: { icon: Icons.quest, color: Colors.quest },
+
+  // receitas
+  salario: { icon: Icons.salario, color: Colors.salario },
+  presente: { icon: Icons.presente, color: Colors.presente },
+  bonus: { icon: Icons.bonus, color: Colors.bonus },
+  other: { icon: Icons.quest, color: Colors.tvIncome }, // fallback
 };
 
-const categoryColors: Record<string, string> = {
-  house: Colors.house,
-  car: Colors.car,
-  fone: Colors.fone,
-  food: Colors.food,
-  shop: Colors.shop,
-  clothes: Colors.clothes,
-  health: Colors.health,
-  game: Colors.game,
-  tech: Colors.tech,
-  gym: Colors.gym,
-  tv: Colors.tv,
-  quest: Colors.quest,
-};
+// ✅ Mapeia ícones e cores para acesso rápido
+const categoryIcons: Record<string, any> = {};
+const categoryColors: Record<string, string> = {};
 
+Object.entries(allCategories).forEach(([key, { icon, color }]) => {
+  categoryIcons[key] = icon;
+  categoryColors[key] = color;
+});
+
+// 🔹 Gera os últimos 3 meses
 const getLastThreeMonths = () => {
   const months: { month: number; year: number; label: string }[] = [];
   const now = new Date();
@@ -68,66 +83,44 @@ const getLastThreeMonths = () => {
     months.push({
       month: d.getMonth(),
       year: d.getFullYear(),
-      label:
-        d.toLocaleString("default", { month: "long" }) +
-        " " +
-        d.getFullYear(),
+      label: d.toLocaleString("default", { month: "long" }) + " " + d.getFullYear(),
     });
   }
   return months.reverse();
 };
 
-const isCurrentWeek = (dateStr: string) => {
-  const [day, month, year] = dateStr.split("/").map(Number);
-  const fullYear = year < 100 ? 2000 + year : year;
-  const d = new Date(fullYear, month - 1, day);
-
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const start = new Date(now);
-  start.setDate(now.getDate() - dayOfWeek + 1);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-
-  return d >= start && d <= end;
-};
-
-const SpendingBlock = () => {
-  const [expenses, setExpenses] = React.useState<ExpenseType[]>([]);
-  const [months, setMonths] = React.useState(getLastThreeMonths());
+const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
+  const [items, setItems] = React.useState<ItemType[]>([]);
+  const [months] = React.useState(getLastThreeMonths());
   const [selectedMonth, setSelectedMonth] = React.useState(months[0]);
-
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [editingExpense, setEditingExpense] = React.useState<ExpenseType | null>(null);
-
+  const [editingItem, setEditingItem] = React.useState<ItemType | null>(null);
   const [newName, setNewName] = React.useState("");
   const [newAmount, setNewAmount] = React.useState("");
   const [newDate, setNewDate] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState<string>("quest");
 
-  // Carrega despesas
-React.useEffect(() => {
-  const loadExpenses = async () => {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
-    if (data) setExpenses(JSON.parse(data));
-  };
+  // 🔹 Carrega dados periodicamente
+  React.useEffect(() => {
+    const loadData = async () => {
+      const data = await AsyncStorage.getItem(storageKey);
+      if (data) setItems(JSON.parse(data));
+    };
+    loadData();
+    const interval = setInterval(loadData, 2000);
+    return () => clearInterval(interval);
+  }, [storageKey]);
 
-  const interval = setInterval(loadExpenses, 2000); // Atualiza a cada 2 segundos
-  return () => clearInterval(interval);
-}, []);
-
-
-  const openEditModal = (expense: ExpenseType | null = null) => {
-    if (expense) {
-      setEditingExpense(expense);
-      setNewName(expense.name);
-      setNewAmount(expense.amount);
-      setNewDate(expense.date);
-      setSelectedCategory(expense.category);
+  // 🔹 Abre o modal de edição/criação
+  const openEditModal = (item: ItemType | null = null) => {
+    if (item) {
+      setEditingItem(item);
+      setNewName(item.name);
+      setNewAmount(item.amount);
+      setNewDate(item.date);
+      setSelectedCategory(item.category);
     } else {
-      setEditingExpense(null);
+      setEditingItem(null);
       setNewName("");
       setNewAmount("");
       setNewDate("");
@@ -136,109 +129,77 @@ React.useEffect(() => {
     setModalVisible(true);
   };
 
+  // 🔹 Salva item
   const handleSave = async () => {
     if (!newName || !newAmount || !newDate) return;
+    let updated: ItemType[] = [];
 
-    let updatedExpenses: ExpenseType[] = [];
-
-    if (editingExpense) {
-      updatedExpenses = expenses.map((e) =>
-        e.id === editingExpense.id
-          ? {
-              ...e,
-              name: newName,
-              amount: newAmount,
-              date: newDate,
-              category: selectedCategory,
-            }
+    if (editingItem) {
+      updated = items.map((e) =>
+        e.id === editingItem.id
+          ? { ...e, name: newName, amount: newAmount, date: newDate, category: selectedCategory }
           : e
       );
     } else {
-      const newItem: ExpenseType = {
-        id: (expenses.length + 1).toString(),
+      const newItem: ItemType = {
+        id: (items.length + 1).toString(),
         name: newName,
         amount: newAmount,
         date: newDate,
         category: selectedCategory,
       };
-      updatedExpenses = [newItem, ...expenses];
+      updated = [newItem, ...items];
     }
 
-    setExpenses(updatedExpenses);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedExpenses));
+    setItems(updated);
+    await AsyncStorage.setItem(storageKey, JSON.stringify(updated));
     setModalVisible(false);
-
-    const [day, month, year] = newDate.split("/").map(Number);
-    const fullYear = year < 100 ? 2000 + year : year;
-    setSelectedMonth({
-      month: month - 1,
-      year: fullYear,
-      label:
-        new Date(fullYear, month - 1, 1).toLocaleString("default", {
-          month: "long",
-        }) + " " + fullYear,
-    });
   };
 
-  const deleteExpense = async (id: string) => {
-    const filtered = expenses.filter((e) => e.id !== id);
-    setExpenses(filtered);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  // 🔹 Exclui item
+  const deleteItem = async (id: string) => {
+    const filtered = items.filter((e) => e.id !== id);
+    setItems(filtered);
+    await AsyncStorage.setItem(storageKey, JSON.stringify(filtered));
     setModalVisible(false);
-    setEditingExpense(null);
+    setEditingItem(null);
   };
 
-  const [filteredExpenses, setFilteredExpenses] = React.useState<ExpenseType[]>([]);
+  // 🔹 Filtra por mês
+  const filteredItems = React.useMemo(() => {
+    return items
+      .filter((exp) => {
+        const [day, month, year] = exp.date.split("/").map(Number);
+        const fullYear = year < 100 ? 2000 + year : year;
+        return month - 1 === selectedMonth.month && fullYear === selectedMonth.year;
+      })
+      .sort((a, b) => {
+        const [dayA, monthA, yearA] = a.date.split("/").map(Number);
+        const [dayB, monthB, yearB] = b.date.split("/").map(Number);
+        const dateA = new Date(2000 + (yearA < 100 ? yearA : yearA), monthA - 1, dayA);
+        const dateB = new Date(2000 + (yearB < 100 ? yearB : yearB), monthB - 1, dayB);
+        return dateB.getTime() - dateA.getTime();
+      });
+  }, [items, selectedMonth]);
 
-  React.useEffect(() => {
-  const filtered = expenses
-    .filter((exp) => {
-      const [day, month, year] = exp.date.split("/").map(Number);
-      const fullYear = year < 100 ? 2000 + year : year;
-
-      // Verifica se pertence ao mês selecionado
-      const isSelectedMonth =
-        month - 1 === selectedMonth.month && fullYear === selectedMonth.year;
-
-      return isSelectedMonth;
-    })
-    .sort((a, b) => {
-      // Converte as datas para objetos Date e ordena do mais recente para o mais antigo
-      const [dayA, monthA, yearA] = a.date.split("/").map(Number);
-      const [dayB, monthB, yearB] = b.date.split("/").map(Number);
-
-      const dateA = new Date(2000 + (yearA < 100 ? yearA : yearA), monthA - 1, dayA);
-      const dateB = new Date(2000 + (yearB < 100 ? yearB : yearB), monthB - 1, dayB);
-
-      return dateB.getTime() - dateA.getTime(); // mais recentes primeiro
-    });
-
-  setFilteredExpenses(filtered);
-}, [expenses, selectedMonth]);
-
-
-
-  // Total do mês atual
-  const totalMonth = filteredExpenses.reduce(
-  (sum, e) => sum + Number(e.amount.replace(/\./g, '').replace(',', '.')),
-  0
-);
-
+  const totalMonth = filteredItems.reduce(
+    (sum, e) => sum + Number(e.amount.replace(/\./g, "").replace(",", ".")),
+    0
+  );
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Cabeçalho */}
+      {/* 🔹 Cabeçalho */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 5 }}>
         <Text style={{ color: Colors.white, fontSize: 20, fontWeight: "700" }}>
-          Despesas de{" "}
-          {selectedMonth.label.charAt(0).toUpperCase() + selectedMonth.label.slice(1)}
+          {title} de {selectedMonth.label}
         </Text>
         <Text style={{ color: Colors.white, fontSize: 16, opacity: 0.8 }}>
           Total: R$ {totalMonth.toFixed(2)}
         </Text>
       </View>
 
-      {/* Meses */}
+      {/* 🔹 Seleção de meses */}
       <View style={{ flexDirection: "row", gap: 5, marginBottom: 15 }}>
         {months.map((m) => (
           <TouchableOpacity
@@ -258,23 +219,29 @@ React.useEffect(() => {
         ))}
       </View>
 
-      {/* Blocos */}
+      {/* 🔹 Blocos */}
       <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredExpenses.length > 0 ? (
-          filteredExpenses.map((item) => {
-            const color = categoryColors[item.category?.toLowerCase() || "quest"];
-            const Icon = categoryIcons[item.category?.toLowerCase() || "quest"];
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => {
+            const categoryKey = item.category?.toLowerCase() || "quest";
+            const Icon = categoryIcons[categoryKey];
+            const color = categoryColors[categoryKey] || Colors.grey;
+
+            const RenderIcon = Icon ? (
+              <Icon width={35} height={35} color={Colors.white} />
+            ) : (
+              <Feather name="help-circle" size={30} color={Colors.white} />
+            );
+
             const percentage =
               totalMonth > 0
-                ? ((parseFloat(item.amount) / totalMonth) * 100).toFixed(0) + "%"
+                ? ((parseFloat(item.amount.replace(",", ".")) / totalMonth) * 100).toFixed(0) + "%"
                 : "0%";
 
             return (
               <View key={item.id} style={[styles.block, { backgroundColor: color }]}>
                 <View style={styles.blockLeft}>
-                  <View style={styles.iconCircle}>
-                    <Icon width={35} height={35} color={Colors.white} />
-                  </View>
+                  <View style={styles.iconCircle}>{RenderIcon}</View>
                 </View>
                 <View style={styles.blockContent}>
                   <View style={styles.blockHeader}>
@@ -294,18 +261,16 @@ React.useEffect(() => {
             );
           })
         ) : (
-          <Text style={{ color: Colors.white, opacity: 0.7 }}>
-            Nenhuma despesa neste mês
-          </Text>
+          <Text style={{ color: Colors.white, opacity: 0.7 }}>Nenhum registro neste mês</Text>
         )}
       </ScrollView>
 
-      {/* Modal */}
+      {/* 🔹 Modal */}
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}>
-              {editingExpense ? "Editar gasto" : "Adicionar gasto"}
+              {editingItem ? "Editar" : "Adicionar"} {title.toLowerCase().slice(0, -1)}
             </Text>
 
             <TextInput
@@ -334,8 +299,7 @@ React.useEffect(() => {
                 if (cleaned.length > 6) cleaned = cleaned.slice(0, 6);
                 let formatted = "";
                 if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
-                if (cleaned.length >= 3)
-                  formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
+                if (cleaned.length >= 3) formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
                 if (cleaned.length >= 5) formatted += "/" + cleaned.slice(4, 6);
                 setNewDate(formatted);
               }}
@@ -345,8 +309,11 @@ React.useEffect(() => {
               <Text style={{ color: Colors.white, fontWeight: "700" }}>Salvar</Text>
             </TouchableOpacity>
 
-            {editingExpense && (
-              <TouchableOpacity onPress={() => deleteExpense(editingExpense.id)} style={[styles.addButton, { backgroundColor: "#FF4444", marginTop: 10 }]}>
+            {editingItem && (
+              <TouchableOpacity
+                onPress={() => deleteItem(editingItem.id)}
+                style={[styles.addButton, { backgroundColor: "#FF4444", marginTop: 10 }]}
+              >
                 <Text style={{ color: Colors.white, fontWeight: "700" }}>Excluir</Text>
               </TouchableOpacity>
             )}
@@ -369,22 +336,55 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     alignItems: "center",
-    marginLeft:10,
+    marginLeft: 10,
   },
   blockLeft: { marginRight: 12 },
   blockContent: { flex: 1 },
-  blockHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+  blockHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   dateText: { color: Colors.white, fontSize: 12, opacity: 0.9 },
-  iconCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: "rgba(255,255,255,0.2)", justifyContent: "center", alignItems: "center" },
+  iconCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   nameText: { color: Colors.white, fontWeight: "700", fontSize: 16 },
   categoryText: { color: Colors.white, fontSize: 13, opacity: 0.9, marginBottom: 4 },
-  bottomInfo: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  bottomInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   amountText: { color: Colors.white, fontWeight: "700", fontSize: 16 },
   percentText: { color: Colors.white, fontSize: 14, fontWeight: "700" },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", paddingHorizontal: 20 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
   modalContent: { backgroundColor: "#222", borderRadius: 15, padding: 20 },
-  input: { backgroundColor: "#333", color: Colors.white, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, marginBottom: 10 },
-  addButton: { backgroundColor: Colors.tintcolor, padding: 12, borderRadius: 12, alignItems: "center" },
+  input: {
+    backgroundColor: "#333",
+    color: Colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  addButton: {
+    backgroundColor: Colors.tintcolor,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
 });
 
 export default SpendingBlock;

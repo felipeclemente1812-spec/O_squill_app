@@ -8,7 +8,7 @@ const Transactions=() => {
         <>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
-        <Text style={styles.Text}>transactions</Text>
+        <Text style={styles.Text}>Metas</Text>
       </View>
     </>
     )

@@ -166,7 +166,7 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
     <View style={{ marginVertical: 20, width: "100%" }}>
       {/* Título com botão próximo */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-        <Text style={{ color: Colors.white, fontSize: 22, fontWeight: "bold" }}>Gastos</Text>
+        <Text style={{ color: Colors.white, fontSize: 22, fontWeight: "bold" }}>Despesas</Text>
         <TouchableOpacity
           onPress={openAddModal}
           style={[styles.addButtonDashed, { marginLeft: 10, paddingHorizontal: 10, paddingVertical: 4, gap: 4 }]}

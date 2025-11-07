@@ -28,11 +28,12 @@ interface IncomeBlockProps {
 }
 
 const categories = [
-  { key: "salario", label: "Salário", icon: Icons.salario, color: Colors.fone },
-  { key: "presente", label: "Presente", icon: Icons.presente, color: Colors.quest },
-  { key: "bonus", label: "Bônus", icon: Icons.bonus, color: Colors.car },
-  { key: "other", label: "Outros", icon: Icons.quest, color: Colors.quest },
+  { key: "salario", label: "Salário", icon: Icons.salario, color: Colors.salario },
+  { key: "presente", label: "Presente", icon: Icons.presente, color: Colors.presente },
+  { key: "bonus", label: "Bônus", icon: Icons.bonus, color: Colors.bonus },
+  { key: "other", label: "Outros", icon: Icons.quest, color: Colors.tvIncome },
 ];
+
 
 const getCategory = (category: string) =>
   categories.find((c) => c.key === category) || categories[categories.length - 1];

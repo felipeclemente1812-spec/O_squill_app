@@ -20,11 +20,3 @@ export interface SpendingType {
     date: string;
     category?: string;
 }
-interface PieSlice {
-  id: string;
-  value: number;
-  color: string;
-  text: string;
-  percentage: number;
-  sliceThickness?: number;
-}
