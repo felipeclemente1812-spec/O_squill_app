@@ -1,11 +1,14 @@
 import Colors from '@/constants/Colors';
+import { useAuth } from '@/context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Header = () => {
-  // 🔹 Função para limpar todos os dados do AsyncStorage
+  const { user, logout, loading } = useAuth();
+
+  // 🔹 Função para limpar todos os dados do AsyncStorage (botão Resetar)
   const resetarTudo = async () => {
     try {
       await AsyncStorage.clear();
@@ -15,18 +18,29 @@ const Header = () => {
     }
   };
 
+  // 🔹 Enquanto carrega, mostra algo neutro
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ color: Colors.white, textAlign: 'center' }}>Carregando...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.wrapper}>
+        {/* 🔹 Informações do usuário */}
         <View style={styles.userInfoWrapper}>
           <Image
-  source={require('@/assets/icons/semft.jpg')}
-  style={{ width:50, height: 50, borderRadius: 1000}}
-/>
+            source={require('@/assets/icons/semft.jpg')}
+            style={{ width: 50, height: 50, borderRadius: 1000 }}
+          />
+
           <View style={styles.userTxtWrapper}>
-            <Text style={[styles.userText, { fontSize: 12 }]}>App teste Header</Text>
+            <Text style={[styles.userText, { fontSize: 12 }]}>Bem-vindo</Text>
             <Text style={[styles.userText, { fontSize: 16 }]}>
-              app <Text style={styles.boldText}>ODEIO A ETEC</Text>
+              {user ? user.nome : 'Usuário'}
             </Text>
           </View>
         </View>
@@ -50,7 +64,6 @@ export default Header;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: Colors.black,
   },
   wrapper: {
@@ -63,11 +76,6 @@ const styles = StyleSheet.create({
   userInfoWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  userImag: {
-    height: 50,
-    width: 50,
-    borderRadius: 30,
   },
   userText: {
     color: Colors.white,

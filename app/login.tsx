@@ -1,111 +1,89 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Alert } from 'react-native';
-import Colors from '@/constants/Colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const STORAGE_KEY = "@userData"; // salva email/senha
-const LOGIN_KEY = "@isLoggedIn";
-
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-
-  const handleRegister = async () => {
-    if (!email || !password) return Alert.alert("Preencha email e senha");
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ email, password }));
-    await AsyncStorage.setItem(LOGIN_KEY, "true");
-    window.location.href = '/(tabs)/index'; // navega para app
-  };
+export default function LoginScreen() {
+  const { login } = useAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [error, setError] = useState<string | null>(null); // 🔴 Armazena o erro atual
 
   const handleLogin = async () => {
-    const stored = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!stored) return Alert.alert("Usuário não cadastrado");
-    const { email: savedEmail, password: savedPassword } = JSON.parse(stored);
-    if (email === savedEmail && password === savedPassword) {
-      await AsyncStorage.setItem(LOGIN_KEY, "true");
-      window.location.href = '/(tabs)/index';
-    } else {
-      Alert.alert("Email ou senha incorretos");
+    setError(null); // limpa erro anterior
+
+    if (!email || !senha) {
+      setError("Preencha todos os campos!");
+      return;
     }
+
+    const storedData = await AsyncStorage.getItem("user");
+    if (!storedData) {
+      setError("Você não possui cadastro!");
+      return;
+    }
+
+    const savedUser = JSON.parse(storedData);
+
+    if (savedUser.email !== email) {
+      setError("Você não possui cadastro!");
+      return;
+    }
+
+    if (savedUser.senha !== senha) {
+      setError("Senha incorreta!");
+      return;
+    }
+
+    // Se tudo certo → faz login e redireciona
+    const ok = await login(email, senha);
+    router.replace("/(tabs)");
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <Text style={styles.title}>{mode === 'login' ? "Login" : "Registrar"}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Entrar</Text>
 
       <TextInput
-        style={styles.input}
-        placeholder="Email"
+        placeholder="E-mail"
         placeholderTextColor="#aaa"
-        keyboardType="email-address"
-        autoCapitalize="none"
+        style={styles.input}
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
       />
 
       <TextInput
-        style={styles.input}
         placeholder="Senha"
         placeholderTextColor="#aaa"
+        style={styles.input}
         secureTextEntry
-        value={password}
-        onChangeText={setPassword}
+        value={senha}
+        onChangeText={setSenha}
       />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={mode === 'login' ? handleLogin : handleRegister}
-      >
-        <Text style={styles.buttonText}>{mode === 'login' ? "Entrar" : "Cadastrar"}</Text>
+      {/* Mensagem de erro */}
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
-        <Text style={styles.switchText}>
-          {mode === 'login' ? "Ainda não tem conta? Cadastre-se" : "Já tem conta? Faça login"}
-        </Text>
+      <TouchableOpacity onPress={() => router.push("./register")}>
+        <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
       </TouchableOpacity>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.black,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    color: Colors.white,
-    fontSize: 36,
-    fontWeight: '700',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    backgroundColor: '#1c1c1c',
-    color: Colors.white,
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#a82052',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  switchText: {
-    color: '#aaa',
-    marginTop: 15,
-  },
+  container: { flex: 1, justifyContent: "center", backgroundColor: "#121212", padding: 20 },
+  title: { color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
+  input: { backgroundColor: "#1c1c1e", color: "#fff", padding: 12, borderRadius: 8, marginBottom: 12 },
+  error: { color: "#ff4b4b", textAlign: "center", marginBottom: 10, fontSize: 15 },
+  button: { backgroundColor: "#ff4b4b", padding: 14, borderRadius: 10, marginTop: 10 },
+  buttonText: { color: "#fff", textAlign: "center", fontSize: 18 },
+  link: { color: "#fff", textAlign: "center", marginTop: 15, textDecorationLine: "underline" },
 });

@@ -79,7 +79,7 @@ const Page = () => {
           <View style={[styles.headerSection, { paddingTop: 30 }]}>
             <View>
               {/* Total de Despesas/Receitas */}
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
                 <Text style={{ color: Colors.white, fontSize: 20 }}>
                   Total de <Text style={{ fontWeight: "700" }}>
                     {showExpenses ? "Despesas" : "Receitas"}
@@ -90,7 +90,7 @@ const Page = () => {
             </Text>
                 </Text>
                 <TouchableOpacity
-                  style={{ marginLeft: 5 }}
+                  style={{ marginLeft: 5, marginTop:-20 }}
                   onPress={() => {
                     setShowExpenses(prev => !prev);
                     setDataType(prev => prev === 'expense' ? 'income' : 'expense');
@@ -147,7 +147,7 @@ export default Page;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.grey,
     paddingHorizontal: 20,
   },
   headerSection: {

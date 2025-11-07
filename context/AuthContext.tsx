@@ -1,28 +1,88 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface AuthContextType {
-  loggedIn: boolean;
-  login: () => void;
-  logout: () => void;
+interface User {
+  nome: string;
+  email: string;
+  senha: string; // ✅ adiciona este campo
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthContextData {
+  user: User | null;
+  login: (email: string, senha: string) => Promise<boolean>;
+  register: (nome: string, email: string, senha: string) => Promise<void>;
+  logout: () => Promise<void>;
+  loading: boolean;
+}
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [loggedIn, setLoggedIn] = useState(false);
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-  const login = () => setLoggedIn(true);
-  const logout = () => setLoggedIn(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 🔹 Carregar usuário salvo
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("@user");
+        if (storedUser) {
+          const parsedUser: User = JSON.parse(storedUser);
+          setUser(parsedUser);
+        }
+      } catch (error) {
+        console.log("Erro ao carregar usuário:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // 🔹 Login
+  const login = async (email: string, senha: string) => {
+    try {
+      const data = await AsyncStorage.getItem("@user");
+      if (!data) return false;
+
+      const savedUser: User = JSON.parse(data);
+      if (savedUser.email === email && savedUser.senha === senha) {
+        setUser(savedUser);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log("Erro no login:", error);
+      return false;
+    }
+  };
+
+  // 🔹 Cadastro
+  const register = async (nome: string, email: string, senha: string) => {
+    try {
+      const newUser: User = { nome, email, senha };
+      await AsyncStorage.setItem("@user", JSON.stringify(newUser));
+      setUser(newUser);
+    } catch (error) {
+      console.log("Erro no registro:", error);
+    }
+  };
+
+  // 🔹 Logout
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem("@user");
+      setUser(null);
+    } catch (error) {
+      console.log("Erro no logout:", error);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ loggedIn, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

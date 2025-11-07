@@ -149,37 +149,43 @@ const Dashboard: React.FC<DashboardProps> = ({
 
 
       <PieChart
-        data={pieData.length > 0 ? pieData : [{ id: "empty", value: 1, color: "transparent", text: "", percentage: 100 }]}
-        donut
-        showGradient
-        radius={75}
-        toggleFocusOnPress
-        innerRadius={50}
-        innerCircleColor={Colors.black}
-        focusOnPress
-        centerLabelComponent={() => {
-          if (!selectedSlice) {
-            return (
-              <Text style={{ fontSize: 22, color: "white", fontWeight: "bold" }}>
-                {selectedPeriod === 0 ? "Semana" : getLastThreeMonths()[selectedPeriod - 1].name}
-              </Text>
-            );
-          }
-          const slice = pieData.find((p) => p.id === selectedSlice);
-          if (!slice) return null;
-          return (
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: Colors.white, fontSize: 16, fontWeight: "700" }}>{slice.text}</Text>
-              <Text style={{ color: Colors.white, fontSize: 14 }}>R${slice.value.toFixed(2)}</Text>
-              <Text style={{ color: Colors.white, fontSize: 14 }}>{slice.percentage.toFixed(0)}%</Text>
-            </View>
-          );
-        }}
-        onPress={(slice: PieSlice) => {
-          const newSelected = selectedSlice === slice.id ? null : slice.id;
-          onSelectSlice(newSelected);
-        }}
-      />
+  data={pieData.length > 0 ? pieData : [{ id: "empty", value: 1, color: "transparent", text: "", percentage: 100 }]}
+  donut
+  showGradient
+  sectionAutoFocus
+  radius={90}
+  innerRadius={60}
+  innerCircleColor={Colors.black}
+  focusOnPress
+  centerLabelComponent={() => {
+    if (!selectedSlice) {
+      return (
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 22, color: 'white', fontWeight: 'bold' }}>
+            {selectedPeriod === 0 ? "Semana" : getLastThreeMonths()[selectedPeriod - 1].name}
+          </Text>
+          <Text style={{ fontSize: 14, color: 'white' }}>Resumo</Text>
+        </View>
+      );
+    }
+
+    const slice = pieData.find((p) => p.id === selectedSlice);
+    if (!slice) return null;
+
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "white", fontSize: 18, fontWeight: "700" }}>{slice.text}</Text>
+        <Text style={{ color: "white", fontSize: 14 }}>R${slice.value.toFixed(2)}</Text>
+        <Text style={{ color: "white", fontSize: 14 }}>{slice.percentage.toFixed(0)}%</Text>
+      </View>
+    );
+  }}
+  onPress={(slice: PieSlice) => {
+    const newSelected = selectedSlice === slice.id ? null : slice.id;
+    onSelectSlice(newSelected);
+  }}
+/>
+
 
       {/* Modal */}
       <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
