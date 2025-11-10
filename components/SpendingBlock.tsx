@@ -83,7 +83,8 @@ const getLastThreeMonths = () => {
     months.push({
       month: d.getMonth(),
       year: d.getFullYear(),
-      label: d.toLocaleString("default", { month: "long" }) + " " + d.getFullYear(),
+      label:
+        d.toLocaleString("default", { month: "long" }) + " " + d.getFullYear(),
     });
   }
   return months.reverse();
@@ -98,7 +99,8 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
   const [newName, setNewName] = React.useState("");
   const [newAmount, setNewAmount] = React.useState("");
   const [newDate, setNewDate] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("quest");
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<string>("quest");
 
   // 🔹 Carrega dados periodicamente
   React.useEffect(() => {
@@ -137,7 +139,13 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
     if (editingItem) {
       updated = items.map((e) =>
         e.id === editingItem.id
-          ? { ...e, name: newName, amount: newAmount, date: newDate, category: selectedCategory }
+          ? {
+              ...e,
+              name: newName,
+              amount: newAmount,
+              date: newDate,
+              category: selectedCategory,
+            }
           : e
       );
     } else {
@@ -171,13 +179,23 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
       .filter((exp) => {
         const [day, month, year] = exp.date.split("/").map(Number);
         const fullYear = year < 100 ? 2000 + year : year;
-        return month - 1 === selectedMonth.month && fullYear === selectedMonth.year;
+        return (
+          month - 1 === selectedMonth.month && fullYear === selectedMonth.year
+        );
       })
       .sort((a, b) => {
         const [dayA, monthA, yearA] = a.date.split("/").map(Number);
         const [dayB, monthB, yearB] = b.date.split("/").map(Number);
-        const dateA = new Date(2000 + (yearA < 100 ? yearA : yearA), monthA - 1, dayA);
-        const dateB = new Date(2000 + (yearB < 100 ? yearB : yearB), monthB - 1, dayB);
+        const dateA = new Date(
+          2000 + (yearA < 100 ? yearA : yearA),
+          monthA - 1,
+          dayA
+        );
+        const dateB = new Date(
+          2000 + (yearB < 100 ? yearB : yearB),
+          monthB - 1,
+          dayB
+        );
         return dateB.getTime() - dateA.getTime();
       });
   }, [items, selectedMonth]);
@@ -188,147 +206,202 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* 🔹 Cabeçalho */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 5 }}>
-        <Text style={{ color: Colors.white, fontSize: 20, fontWeight: "700" }}>
-          {title} de {selectedMonth.label}
+    <View style={styles.container}>
+      <View style={{ flex: 1 }}>
+       {/* 🔹 Cabeçalho + Total */}
+{/* Título */}
+<Text style={{ color: Colors.text, fontSize: 20, fontWeight: "500", marginBottom: 8 }}>
+  {title} de {selectedMonth.label}
+</Text>
+
+{/* Linha meses + total */}
+<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
+  {/* Meses */}
+  <View style={{ flexDirection: "row", gap: 5 }}>
+    {months.map((m) => (
+      <TouchableOpacity
+        key={m.label}
+        onPress={() => setSelectedMonth(m)}
+        style={{
+          backgroundColor: m.label === selectedMonth.label ? Colors.tintcolor : Colors.grey,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderRadius: 10,
+        }}
+      >
+        <Text style={{ color: Colors.white, fontSize: 14 }}>
+          {m.label.split(" ")[0]}
         </Text>
-        <Text style={{ color: Colors.white, fontSize: 16, opacity: 0.8 }}>
-          Total: R$ {totalMonth.toFixed(2)}
-        </Text>
-      </View>
+      </TouchableOpacity>
+    ))}
+  </View>
 
-      {/* 🔹 Seleção de meses */}
-      <View style={{ flexDirection: "row", gap: 5, marginBottom: 15 }}>
-        {months.map((m) => (
-          <TouchableOpacity
-            key={m.label}
-            onPress={() => setSelectedMonth(m)}
-            style={{
-              backgroundColor: m.label === selectedMonth.label ? Colors.tintcolor : Colors.grey,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: Colors.white, fontSize: 14 }}>
-              {m.label.split(" ")[0]}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+  {/* Total */}
+  <Text style={{ color: Colors.text, fontSize: 22, fontWeight: "800" }}>
+    Total: R$ {totalMonth.toFixed(2)}
+  </Text>
+</View>
+        {/* 🔹 Blocos */}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => {
+              const categoryKey = item.category?.toLowerCase() || "quest";
+              const Icon = categoryIcons[categoryKey];
+              const color = categoryColors[categoryKey] || Colors.grey;
 
-      {/* 🔹 Blocos */}
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item) => {
-            const categoryKey = item.category?.toLowerCase() || "quest";
-            const Icon = categoryIcons[categoryKey];
-            const color = categoryColors[categoryKey] || Colors.grey;
+              const RenderIcon = Icon ? (
+                <Icon width={35} height={35} color={Colors.white} />
+              ) : (
+                <Feather name="help-circle" size={30} color={Colors.white} />
+              );
 
-            const RenderIcon = Icon ? (
-              <Icon width={35} height={35} color={Colors.white} />
-            ) : (
-              <Feather name="help-circle" size={30} color={Colors.white} />
-            );
+              const percentage =
+                totalMonth > 0
+                  ? (
+                      (parseFloat(item.amount.replace(",", ".")) / totalMonth) *
+                      100
+                    ).toFixed(0) + "%"
+                  : "0%";
 
-            const percentage =
-              totalMonth > 0
-                ? ((parseFloat(item.amount.replace(",", ".")) / totalMonth) * 100).toFixed(0) + "%"
-                : "0%";
-
-            return (
-              <View key={item.id} style={[styles.block, { backgroundColor: color }]}>
-                <View style={styles.blockLeft}>
-                  <View style={styles.iconCircle}>{RenderIcon}</View>
-                </View>
-                <View style={styles.blockContent}>
-                  <View style={styles.blockHeader}>
-                    <Text style={styles.dateText}>{item.date}</Text>
-                    <TouchableOpacity onPress={() => openEditModal(item)}>
-                      <Feather name="more-vertical" size={20} color={Colors.white} />
-                    </TouchableOpacity>
+              return (
+                <View
+                  key={item.id}
+                  style={[styles.block, { backgroundColor: color }]}
+                >
+                  <View style={styles.blockLeft}>
+                    <View style={styles.iconCircle}>{RenderIcon}</View>
                   </View>
-                  <Text style={styles.nameText}>{item.name}</Text>
-                  <Text style={styles.categoryText}>{item.category}</Text>
-                  <View style={styles.bottomInfo}>
-                    <Text style={styles.amountText}>R$ {item.amount}</Text>
-                    <Text style={styles.percentText}>{percentage}</Text>
+                  <View style={styles.blockContent}>
+                    <View style={styles.blockHeader}>
+                      <Text style={styles.dateText}>{item.date}</Text>
+                      <TouchableOpacity onPress={() => openEditModal(item)}>
+                        <Feather
+                          name="more-vertical"
+                          size={20}
+                          color={Colors.white}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.nameText}>{item.name}</Text>
+                    <Text style={styles.categoryText}>{item.category}</Text>
+                    <View style={styles.bottomInfo}>
+                      <Text style={styles.amountText}>R$ {item.amount}</Text>
+                      <Text style={styles.percentText}>{percentage}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })
-        ) : (
-          <Text style={{ color: Colors.white, opacity: 0.7 }}>Nenhum registro neste mês</Text>
-        )}
-      </ScrollView>
-
-      {/* 🔹 Modal */}
-      <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}>
-              {editingItem ? "Editar" : "Adicionar"} {title.toLowerCase().slice(0, -1)}
+              );
+            })
+          ) : (
+            <Text style={{ color: Colors.white, opacity: 0.7 }}>
+              Nenhum registro neste mês
             </Text>
+          )}
+        </ScrollView>
 
-            <TextInput
-              placeholder="Nome"
-              placeholderTextColor="#aaa"
-              style={styles.input}
-              value={newName}
-              onChangeText={setNewName}
-            />
-            <TextInput
-              placeholder="Valor"
-              placeholderTextColor="#aaa"
-              keyboardType="numeric"
-              style={styles.input}
-              value={newAmount}
-              onChangeText={setNewAmount}
-            />
-            <TextInput
-              placeholder="Data (dd/mm/yy)"
-              placeholderTextColor="#aaa"
-              keyboardType="numeric"
-              style={styles.input}
-              value={newDate}
-              onChangeText={(text) => {
-                let cleaned = text.replace(/\D/g, "");
-                if (cleaned.length > 6) cleaned = cleaned.slice(0, 6);
-                let formatted = "";
-                if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
-                if (cleaned.length >= 3) formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
-                if (cleaned.length >= 5) formatted += "/" + cleaned.slice(4, 6);
-                setNewDate(formatted);
-              }}
-            />
-
-            <TouchableOpacity onPress={handleSave} style={styles.addButton}>
-              <Text style={{ color: Colors.white, fontWeight: "700" }}>Salvar</Text>
-            </TouchableOpacity>
-
-            {editingItem && (
-              <TouchableOpacity
-                onPress={() => deleteItem(editingItem.id)}
-                style={[styles.addButton, { backgroundColor: "#FF4444", marginTop: 10 }]}
+        {/* 🔹 Modal */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text
+                style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}
               >
-                <Text style={{ color: Colors.white, fontWeight: "700" }}>Excluir</Text>
-              </TouchableOpacity>
-            )}
+                {editingItem ? "Editar" : "Adicionar"}{" "}
+                {title.toLowerCase().slice(0, -1)}
+              </Text>
 
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ color: Colors.white, textAlign: "center" }}>Cancelar</Text>
-            </TouchableOpacity>
+              <TextInput
+                placeholder="Nome"
+                placeholderTextColor="#aaa"
+                style={styles.input}
+                value={newName}
+                onChangeText={setNewName}
+              />
+              <TextInput
+                placeholder="Valor"
+                placeholderTextColor="#aaa"
+                keyboardType="numeric"
+                style={styles.input}
+                value={newAmount}
+                onChangeText={setNewAmount}
+              />
+              <TextInput
+                placeholder="Data (dd/mm/yy)"
+                placeholderTextColor="#aaa"
+                keyboardType="numeric"
+                style={styles.input}
+                value={newDate}
+                onChangeText={(text) => {
+                  let cleaned = text.replace(/\D/g, "");
+                  if (cleaned.length > 6) cleaned = cleaned.slice(0, 6);
+                  let formatted = "";
+                  if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
+                  if (cleaned.length >= 3)
+                    formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
+                  if (cleaned.length >= 5)
+                    formatted += "/" + cleaned.slice(4, 6);
+                  setNewDate(formatted);
+                }}
+              />
+
+              <TouchableOpacity onPress={handleSave} style={styles.addButton}>
+                <Text style={{ color: Colors.white, fontWeight: "700" }}>
+                  Salvar
+                </Text>
+              </TouchableOpacity>
+
+              {editingItem && (
+                <TouchableOpacity
+                  onPress={() => deleteItem(editingItem.id)}
+                  style={[
+                    styles.addButton,
+                    { backgroundColor: "#FF4444", marginTop: 10 },
+                  ]}
+                >
+                  <Text style={{ color: Colors.white, fontWeight: "700" }}>
+                    Excluir
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={{ marginTop: 10 }}
+              >
+                <Text style={{ color: Colors.white, textAlign: "center" }}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    backgroundColor: Colors.lightBackground,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    marginTop: 25,
+    paddingVertical: 0, // menor e efetivo
+    marginVertical: 0, // reduz espaço externo
+    shadowColor: Colors.darkBrown,
+    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 3,
+    borderColor: Colors.brown,
+    borderStyle: "solid",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
   block: {
     flexDirection: "row",
     width: 300,
@@ -356,7 +429,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   nameText: { color: Colors.white, fontWeight: "700", fontSize: 16 },
-  categoryText: { color: Colors.white, fontSize: 13, opacity: 0.9, marginBottom: 4 },
+  categoryText: {
+    color: Colors.white,
+    fontSize: 13,
+    opacity: 0.9,
+    marginBottom: 4,
+  },
   bottomInfo: {
     flexDirection: "row",
     justifyContent: "space-between",

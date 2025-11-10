@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(parsedUser);
         }
       } catch (error) {
-        console.log("Erro ao carregar usuário:", error);
+        console.log("Erro ao carregar usuáario:", error);
       } finally {
         setLoading(false);
       }

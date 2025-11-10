@@ -22,7 +22,6 @@ const Page = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
   const [selectedSlice, setSelectedSlice] = useState<string | null>(null);
 
-  // 🔹 Calcula intervalo da semana
   const getCurrentWeekRange = () => {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -35,7 +34,6 @@ const Page = () => {
     return { start, end };
   };
 
-  // 🔹 Calcula total semanal
   const calculateWeeklyTotal = (data: any[]) => {
     const { start, end } = getCurrentWeekRange();
     return data
@@ -49,7 +47,6 @@ const Page = () => {
       .reduce((acc, item) => acc + Number(item.amount), 0);
   };
 
-  // 🔹 Carregar dados ao abrir a tela
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
@@ -73,24 +70,24 @@ const Page = () => {
     <>
       <Stack.Screen options={{ header: () => <Header /> }} />
 
-      <View style={[styles.container, { paddingTop: 10 }]}>
+      <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
+
           {/* 🔹 Cabeçalho Total */}
-          <View style={[styles.headerSection, { paddingTop: 30 }]}>
+          <View style={styles.headerSection}>
             <View>
-              {/* Total de Despesas/Receitas */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
-                <Text style={{ color: Colors.white, fontSize: 20 }}>
-                  Total de <Text style={{ fontWeight: "700" }}>
+                <Text style={styles.titleText}>
+                  Total de <Text style={styles.titleHighlight}>
                     {showExpenses ? "Despesas" : "Receitas"}
                   </Text>
                   {"\n"}
-          <Text style={{ color: Colors.white, fontSize: 12, marginTop: 4 }}>
-                (últimos 7 dias)
-            </Text>
+                  <Text style={[styles.subtitleText, { fontWeight: "700" }]}>
+                    (últimos 7 dias)
                 </Text>
+              </Text>
                 <TouchableOpacity
-                  style={{ marginLeft: 5, marginTop:-20 }}
+                  style={{ marginLeft: 6, marginTop: -20 }}
                   onPress={() => {
                     setShowExpenses(prev => !prev);
                     setDataType(prev => prev === 'expense' ? 'income' : 'expense');
@@ -99,11 +96,12 @@ const Page = () => {
                   <Ionicons
                     name={showExpenses ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
                     size={22}
-                    color={Colors.white}
+                    color={Colors.brown}
                   />
                 </TouchableOpacity>
               </View>
-              <Text style={{ color: Colors.white, fontSize: 36, fontWeight: "700" }}>
+
+              <Text style={styles.totalValue}>
                 R${totalValue.toFixed(2)}
               </Text>
             </View>
@@ -123,18 +121,18 @@ const Page = () => {
             </View>
           </View>
 
-          {/* 🔹 Blocos de Controle */}
+          {/* 🔹 Blocos */}
           {showExpenses ? (
-  <>
-    <ExpenseBlock onChange={(data) => setExpenses(data)} />
-    <SpendingBlock storageKey="@expenses" title="Despesas" />
-  </>
-) : (
-  <>
-    <IncomeBlock onChange={(data) => setIncomes(data)} />
-    <SpendingBlock storageKey="@income" title="Receitas" />
-  </>
-)}
+            <>
+              <ExpenseBlock onChange={(data) => setExpenses(data)} />
+              <SpendingBlock storageKey="@expenses" title="Despesas" />
+            </>
+          ) : (
+            <>
+              <IncomeBlock onChange={(data) => setIncomes(data)} />
+              <SpendingBlock storageKey="@income" title="Receitas" />
+            </>
+          )}
 
         </ScrollView>
       </View>
@@ -147,18 +145,51 @@ export default Page;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.grey,
+    backgroundColor: Colors.background,
     paddingHorizontal: 20,
+    paddingTop: 10,
   },
   headerSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: Colors.lightBackground,
+    borderRadius: 16,
+    padding: 20,
+    paddingVertical: 26,
+    marginTop: 20,
     marginBottom: 20,
+    shadowColor: Colors.darkBrown,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+  borderWidth: 3,
+  borderColor: Colors.brown,
+  borderStyle:'solid',
+
+  },
+  titleText: {
+    color: Colors.text,
+    fontSize: 20,
+  },
+  titleHighlight: {
+    color: Colors.brown,
+    fontWeight: "700",
+  },
+  subtitleText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  totalValue: {
+    color: Colors.darkBrown,
+    fontSize: 36,
+    fontWeight: "700",
+    marginTop: 4,
   },
   dashboardContainer: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: 10,
+    right: 10,
   },
 });

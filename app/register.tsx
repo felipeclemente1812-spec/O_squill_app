@@ -1,46 +1,57 @@
+// app/register.tsx
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 
 export default function RegisterScreen() {
   const { register } = useAuth();
   const router = useRouter();
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [emailValido, setEmailValido] = useState<boolean | null>(null);
   const [senhaValida, setSenhaValida] = useState<boolean | null>(null);
 
-  // ✅ Verifica se o e-mail tem formato válido
   const validarEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
-
-  // ✅ Senha precisa de: 1 maiúscula, 1 minúscula, 1 número, 1 caractere especial e mínimo 8 caracteres
   const validarSenha = (senha: string) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(senha);
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(
+      senha
+    );
 
   const handleRegister = async () => {
-    if (!nome || !email || !senha) return Alert.alert("Erro", "Preencha todos os campos!");
-    if (!validarEmail(email)) return Alert.alert("Erro", "Digite um e-mail válido!");
+    if (!nome || !email || !senha)
+      return Alert.alert("Erro", "Preencha todos os campos!");
+    if (!validarEmail(email))
+      return Alert.alert("Erro", "Digite um e-mail válido!");
     if (!validarSenha(senha))
       return Alert.alert(
         "Erro",
-        "A senha precisa ter pelo menos 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial!"
+        "A senha deve ter 8+ caracteres, incluindo letra maiúscula, minúscula, número e símbolo."
       );
 
     await register(nome, email, senha);
-    Alert.alert("Sucesso", "Conta criada!");
+    Alert.alert("Sucesso", "Conta criada com sucesso!");
     router.replace("/(tabs)");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cadastrar</Text>
+      <Text style={styles.logo}>SQUILL</Text>
+      <Text style={styles.subtitle}>
+        Preencha as informações e tenha acesso ao nosso aplicativo!
+      </Text>
 
       <TextInput
-        placeholder="Nome"
-        placeholderTextColor="#aaa"
+        placeholder="Nome Completo"
+        placeholderTextColor="#888"
         style={styles.input}
         value={nome}
         onChangeText={setNome}
@@ -48,7 +59,7 @@ export default function RegisterScreen() {
 
       <TextInput
         placeholder="E-mail"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         style={styles.input}
         value={email}
         onChangeText={(text) => {
@@ -56,15 +67,21 @@ export default function RegisterScreen() {
           setEmailValido(validarEmail(text));
         }}
       />
+
       {email.length > 0 && (
-        <Text style={[styles.feedback, { color: emailValido ? "lightgreen" : "tomato" }]}>
+        <Text
+          style={[
+            styles.feedback,
+            { color: emailValido ? "#1f8a1f" : "#cc2e2e" },
+          ]}
+        >
           {emailValido ? "E-mail válido ✅" : "E-mail inválido ❌"}
         </Text>
       )}
 
       <TextInput
         placeholder="Senha"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         style={styles.input}
         secureTextEntry
         value={senha}
@@ -73,16 +90,22 @@ export default function RegisterScreen() {
           setSenhaValida(validarSenha(text));
         }}
       />
+
       {senha.length > 0 && (
-        <Text style={[styles.feedback, { color: senhaValida ? "lightgreen" : "tomato" }]}>
+        <Text
+          style={[
+            styles.feedback,
+            { color: senhaValida ? "#1f8a1f" : "#cc2e2e" },
+          ]}
+        >
           {senhaValida
             ? "Senha forte ✅"
-            : "A senha deve conter 8+ caracteres, maiúscula, minúscula, número e símbolo ❌"}
+            : "Senha deve conter 8+ caracteres, maiúscula, minúscula, número e símbolo ❌"}
         </Text>
       )}
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
+        <Text style={styles.buttonText}>CRIAR CONTA</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.back()}>
@@ -93,20 +116,57 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", backgroundColor: "#121212", padding: 20 },
-  title: { color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: {
-    backgroundColor: "#1c1c1e",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#f2f2f2",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 25,
+  },
+  logo: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#7b4b1d", // marrom escuro
     marginBottom: 6,
   },
-  feedback: {
+  subtitle: {
+    color: "#a36c35", // marrom mais claro
+    fontSize: 13,
+    marginBottom: 25,
+    textAlign: "center",
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    color: "#333",
+  },
+  feedback: {
+    alignSelf: "flex-start",
+    marginBottom: 10,
+    fontSize: 13,
+  },
+  button: {
+    backgroundColor: "#7b4b1d",
+    borderRadius: 10,
+    width: "100%",
+    paddingVertical: 14,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+  link: {
+    color: "#7b4b1d",
+    marginTop: 18,
+    textDecorationLine: "underline",
     fontSize: 14,
   },
-  button: { backgroundColor: "#ff4b4b", padding: 14, borderRadius: 10, marginTop: 10 },
-  buttonText: { color: "#fff", textAlign: "center", fontSize: 18 },
-  link: { color: "#fff", textAlign: "center", marginTop: 15, textDecorationLine: "underline" },
 });

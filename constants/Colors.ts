@@ -1,29 +1,37 @@
 const Colors = {
-  // cores base
-  black: '#1a1a1a',
-  grey: '#242424',
-  white: '#FCFCFC',
-  tintcolor: '#976822ff',
+  // 🔸 Base geral
+  background: '#F8F6F2', // bege muito claro (fundo)
+  white: '#FFFFFF',      // branco puro (cartões, blocos)
+  brown: '#6B3E1E',      // marrom médio principal (título e ícones)
+  lightBrown: '#A97446', // marrom claro (barras e botões)
+  darkBrown: '#3E2412',  // marrom escuro (texto forte)
+  grey: '#D9D3CA',       // cinza/bege suave (bordas e divisórias)
+  tintcolor: '#C98C44',  // marrom amarelado (destaques, botões “+”)
+  lightBackground: '#eeeeee',
 
-  // despesas / categorias
-  house: "#8B4513",     // Marrom forte (casa / estrutura)
-  car: "#CD853F",       // Marrom claro / caramelo (mobilidade)
-  fone: "#6A5ACD",      // Azul violeta suave (música / streaming)
-  food: "#FF8C00",      // Laranja terroso (comida)
-  shop: "#D2B48C",      // Bege amadeirado (mercado)
-  clothes: "#A0522D",   // Marrom avermelhado (roupas)
-  health: "#556B2F",    // Verde musgo escuro (saúde)
-  game: "#20B2AA",      // Azul ciano suave (games / tecnologia)
-  tech: "#4682B4",      // Azul médio (tech / gadgets)
-  gym: "#9ACD32",       // Verde limão escuro (academia / energia)
-  tv: "#DAA520",        // Dourado / caramelo (streaming)
-  quest: "#D8BFD8",     // Lilás suave (outros / variados)
+  // 🔹 Texto
+  text: '#3E2412',       // texto principal
+  textSecondary: '#7B6A59', // texto secundário
 
-  // receitas / Income
-  salario: "#228B22",   // Verde floresta (salário)
-  presente: "#FF69B4",  // Rosa vivo (presentes / bônus alegre)
-  bonus: "#FFD700",     // Amarelo ouro (bônus / destaque)
-  tvIncome: "#FFA07A",  // Salmão suave (receitas menores / extras)
-}
+  // 🔹 Despesas / categorias
+  house: "#8B5A2B",      // marrom bronze (casa)
+  car: "#B8860B",        // dourado escuro (carro)
+  fone: "#A67C52",       // marrom quente (música / streaming)
+  food: "#D2691E",       // marrom avermelhado (comida)
+  shop: "#E6BE8A",       // bege amadeirado (mercado)
+  clothes: "#A0522D",    // marrom queimado (roupas)
+  health: "#9C6B3C",     // marrom alaranjado (saúde)
+  game: "#B8860B",       // dourado queimado (games)
+  tech: "#BC8F8F",       // rosado neutro (tech)
+  gym: "#CDAA7D",        // bege quente (academia)
+  tv: "#D2B48C",         // bege (streaming)
+  quest: "#EED8AE",      // amarelo claro (outros)
+
+  // 🔹 Receitas / Income
+  salario: "#6B8E23",    // verde oliva (salário)
+  presente: "#D2691E",   // laranja terroso (presentes)
+  bonus: "#DAA520",      // dourado (bônus)
+  tvIncome: "#BC8F8F",   // rosado neutro (extras)
+};
 
 export default Colors;

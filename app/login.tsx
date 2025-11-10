@@ -1,54 +1,37 @@
+// app/login.tsx
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [error, setError] = useState<string | null>(null); // 🔴 Armazena o erro atual
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    setError(null); // limpa erro anterior
+    setError(null);
 
-    if (!email || !senha) {
-      setError("Preencha todos os campos!");
-      return;
-    }
+    if (!email || !senha) return setError("Preencha todos os campos!");
 
-    const storedData = await AsyncStorage.getItem("user");
-    if (!storedData) {
-      setError("Você não possui cadastro!");
-      return;
-    }
-
-    const savedUser = JSON.parse(storedData);
-
-    if (savedUser.email !== email) {
-      setError("Você não possui cadastro!");
-      return;
-    }
-
-    if (savedUser.senha !== senha) {
-      setError("Senha incorreta!");
-      return;
-    }
-
-    // Se tudo certo → faz login e redireciona
     const ok = await login(email, senha);
+    if (!ok) return setError("Credenciais inválidas ou usuário não encontrado!");
+
     router.replace("/(tabs)");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Entrar</Text>
+      <Text style={styles.logo}>SQUILL</Text>
+      <Text style={styles.subtitle}>
+        Faça login e tenha acesso ao nosso aplicativo!
+      </Text>
 
       <TextInput
         placeholder="E-mail"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         style={styles.input}
         value={email}
         onChangeText={setEmail}
@@ -57,21 +40,20 @@ export default function LoginScreen() {
 
       <TextInput
         placeholder="Senha"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         style={styles.input}
         secureTextEntry
         value={senha}
         onChangeText={setSenha}
       />
 
-      {/* Mensagem de erro */}
       {error && <Text style={styles.error}>{error}</Text>}
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>ENTRAR</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("./register")}>
+      <TouchableOpacity onPress={() => router.push("/register")}>
         <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
       </TouchableOpacity>
     </View>
@@ -79,11 +61,58 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", backgroundColor: "#121212", padding: 20 },
-  title: { color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: { backgroundColor: "#1c1c1e", color: "#fff", padding: 12, borderRadius: 8, marginBottom: 12 },
-  error: { color: "#ff4b4b", textAlign: "center", marginBottom: 10, fontSize: 15 },
-  button: { backgroundColor: "#ff4b4b", padding: 14, borderRadius: 10, marginTop: 10 },
-  buttonText: { color: "#fff", textAlign: "center", fontSize: 18 },
-  link: { color: "#fff", textAlign: "center", marginTop: 15, textDecorationLine: "underline" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f2f2f2",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 25,
+  },
+  logo: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#7b4b1d", // marrom escuro
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: "#a36c35", // marrom mais claro
+    fontSize: 13,
+    marginBottom: 25,
+    textAlign: "center",
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    color: "#333",
+  },
+  error: {
+    color: "#cc2e2e",
+    textAlign: "center",
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  button: {
+    backgroundColor: "#7b4b1d",
+    borderRadius: 10,
+    width: "100%",
+    paddingVertical: 14,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+  link: {
+    color: "#7b4b1d",
+    marginTop: 18,
+    textDecorationLine: "underline",
+    fontSize: 14,
+  },
 });

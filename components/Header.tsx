@@ -39,7 +39,7 @@ const Header = () => {
 
           <View style={styles.userTxtWrapper}>
             <Text style={[styles.userText, { fontSize: 12 }]}>Bem-vindo</Text>
-            <Text style={[styles.userText, { fontSize: 16 }]}>
+            <Text style={[styles.userText, { fontSize: 18, fontWeight: "700" }]}>
               {user ? user.nome : 'Usuário'}
             </Text>
           </View>
@@ -64,7 +64,7 @@ export default Header;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.black,
+    backgroundColor: '#000000ff',
   },
   wrapper: {
     flexDirection: 'row',
