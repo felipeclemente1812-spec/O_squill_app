@@ -1,15 +1,26 @@
-import Header from '@/components/Header';
-import Colors from '@/constants/Colors';
-import { Stack } from 'expo-router';
+import Header from "@/components/Header";
+import Colors from "@/constants/Colors";
+import { Stack } from "expo-router";
 import React, { useState, useCallback } from "react";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import ExpenseBlock, { ExpenseType } from '@/components/ExpenseBlock';
-import IncomeBlock, { IncomeType } from '@/components/IncomeBlock';
-import SpendingBlock from '@/components/SpendingBlock';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import Dashboard from '@/components/Dashboard';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import ExpenseBlock, { ExpenseType } from "@/components/ExpenseBlock";
+import IncomeBlock, { IncomeType } from "@/components/IncomeBlock";
+import SpendingBlock from "@/components/SpendingBlock";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import Dashboard from "@/components/Dashboard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const STORAGE_KEY_EXPENSES = "@expenses";
 const STORAGE_KEY_INCOMES = "@incomes";
@@ -18,7 +29,7 @@ const Page = () => {
   const [expenses, setExpenses] = useState<ExpenseType[]>([]);
   const [incomes, setIncomes] = useState<IncomeType[]>([]);
   const [showExpenses, setShowExpenses] = useState(true);
-  const [dataType, setDataType] = useState<'expense' | 'income'>('expense');
+  const [dataType, setDataType] = useState<"expense" | "income">("expense");
   const [selectedPeriod, setSelectedPeriod] = useState<number>(0);
   const [selectedSlice, setSelectedSlice] = useState<string | null>(null);
 
@@ -37,9 +48,9 @@ const Page = () => {
   const calculateWeeklyTotal = (data: any[]) => {
     const { start, end } = getCurrentWeekRange();
     return data
-      .filter(item => {
+      .filter((item) => {
         if (!item.date) return false;
-        const [day, month, year] = item.date.split('/').map(Number);
+        const [day, month, year] = item.date.split("/").map(Number);
         const fullYear = year < 100 ? 2000 + year : year;
         const itemDate = new Date(fullYear, month - 1, day);
         return itemDate >= start && itemDate <= end;
@@ -67,106 +78,133 @@ const Page = () => {
   const totalValue = showExpenses ? totalExpense : totalIncome;
 
   return (
-    <>
-      <Stack.Screen options={{ header: () => <Header /> }} />
+    <SafeAreaView style={styles.safeArea}>
+      <Header />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.scrollContainer, { paddingBottom: 80 }]} // 👈 aqui
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.container}>
+              {/* 🔹 Cabeçalho Total */}
+              <View style={styles.headerSection}>
+                {/* 🔹 Bloco Total */}
+                <View style={styles.totalBlock}>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
+                    <Text style={styles.titleText}>
+                      Total de{" "}
+                      <Text style={styles.titleHighlight}>
+                        {showExpenses ? "Despesas" : "Receitas"}
+                      </Text>
+                      {"\n"}
+                      <Text style={[styles.subtitleText, { fontWeight: "700" }]}>
+                        (últimos 7 dias)
+                      </Text>
+                    </Text>
+                    <TouchableOpacity
+                      style={{ marginLeft: 6, marginTop: -20 }}
+                      onPress={() => {
+                        setShowExpenses((prev) => !prev);
+                        setDataType((prev) =>
+                          prev === "expense" ? "income" : "expense"
+                        );
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          showExpenses
+                            ? "arrow-down-circle-outline"
+                            : "arrow-up-circle-outline"
+                        }
+                        size={22}
+                        color={Colors.brown}
+                      />
+                    </TouchableOpacity>
+                  </View>
 
-      <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+                  <Text style={styles.totalValue}>R${totalValue.toFixed(2)}</Text>
+                </View>
 
-          {/* 🔹 Cabeçalho Total */}
-          <View style={styles.headerSection}>
-            <View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
-                <Text style={styles.titleText}>
-                  Total de <Text style={styles.titleHighlight}>
-                    {showExpenses ? "Despesas" : "Receitas"}
-                  </Text>
-                  {"\n"}
-                  <Text style={[styles.subtitleText, { fontWeight: "700" }]}>
-                    (últimos 7 dias)
-                </Text>
-              </Text>
-                <TouchableOpacity
-                  style={{ marginLeft: 6, marginTop: -20 }}
-                  onPress={() => {
-                    setShowExpenses(prev => !prev);
-                    setDataType(prev => prev === 'expense' ? 'income' : 'expense');
-                  }}
-                >
-                  <Ionicons
-                    name={showExpenses ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
-                    size={22}
-                    color={Colors.brown}
+                {/* 🔹 Gráfico */}
+                <View style={styles.dashboardWrapper}>
+                  <Dashboard
+                    expenses={expenses}
+                    incomes={incomes}
+                    dataType={dataType}
+                    selectedPeriod={selectedPeriod}
+                    selectedSlice={selectedSlice}
+                    onSelectSlice={(sliceId) => setSelectedSlice(sliceId)}
+                    setDataType={setDataType}
+                    setSelectedPeriod={setSelectedPeriod}
                   />
-                </TouchableOpacity>
+                </View>
               </View>
 
-              <Text style={styles.totalValue}>
-                R${totalValue.toFixed(2)}
-              </Text>
+              {/* 🔹 Blocos */}
+              {showExpenses ? (
+                <>
+                  <ExpenseBlock onChange={(data) => setExpenses(data)} />
+                  <SpendingBlock storageKey="@expenses" title="Despesas" />
+                </>
+              ) : (
+                <>
+                  <IncomeBlock onChange={(data) => setIncomes(data)} />
+                  <SpendingBlock storageKey="@income" title="Receitas" />
+                </>
+              )}
             </View>
-
-            {/* 🔹 Dashboard */}
-            <View style={styles.dashboardContainer}>
-              <Dashboard
-                expenses={expenses}
-                incomes={incomes}
-                dataType={dataType}
-                selectedPeriod={selectedPeriod}
-                selectedSlice={selectedSlice}
-                onSelectSlice={(sliceId) => setSelectedSlice(sliceId)}
-                setDataType={setDataType}
-                setSelectedPeriod={setSelectedPeriod}
-              />
-            </View>
-          </View>
-
-          {/* 🔹 Blocos */}
-          {showExpenses ? (
-            <>
-              <ExpenseBlock onChange={(data) => setExpenses(data)} />
-              <SpendingBlock storageKey="@expenses" title="Despesas" />
-            </>
-          ) : (
-            <>
-              <IncomeBlock onChange={(data) => setIncomes(data)} />
-              <SpendingBlock storageKey="@income" title="Receitas" />
-            </>
-          )}
-
+          </TouchableWithoutFeedback>
         </ScrollView>
-      </View>
-    </>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 export default Page;
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  container: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
   headerSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: Colors.lightBackground,
     borderRadius: 16,
-    padding: 20,
-    paddingVertical: 26,
+    paddingHorizontal: 40,
+    paddingVertical: 0,
     marginTop: 20,
     marginBottom: 20,
     shadowColor: Colors.darkBrown,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 3,
-  borderWidth: 3,
-  borderColor: Colors.brown,
-  borderStyle:'solid',
-
+    borderWidth: 3,
+    borderColor: Colors.brown,
+    borderStyle: "solid",
+  },
+  totalBlock: {
+    justifyContent: "center",
+  },
+  dashboardWrapper: {
+    justifyContent: "flex-start",
+    alignItems: "center",
+    width: 150,
   },
   titleText: {
     color: Colors.text,
@@ -186,10 +224,5 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "700",
     marginTop: 4,
-  },
-  dashboardContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
   },
 });

@@ -1,8 +1,20 @@
 import Colors from "@/constants/Colors";
 import React, { useEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get("window");
 
 export interface PieSlice {
   id: string;
@@ -18,14 +30,13 @@ interface DashboardProps {
   incomes: any[];
   dataType: "expense" | "income";
   setDataType: (type: "expense" | "income") => void;
-  selectedPeriod: number; // 0 = semana, 1-3 = últimos meses
+  selectedPeriod: number;
   setSelectedPeriod: (period: number) => void;
   selectedSlice: string | null;
   onSelectSlice: (sliceId: string | null) => void;
 }
 
 const categoryColors: Record<string, string> = {
-  // despesas
   house: Colors.house,
   car: Colors.car,
   fone: Colors.fone,
@@ -38,8 +49,6 @@ const categoryColors: Record<string, string> = {
   gym: Colors.gym,
   tv: Colors.tv,
   quest: Colors.quest,
-
-  // receitas
   salario: Colors.salario,
   presente: Colors.presente,
   bonus: Colors.bonus,
@@ -77,7 +86,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     const now = new Date();
     const dayOfWeek = now.getDay();
     const start = new Date(now);
-    start.setDate(now.getDate() - dayOfWeek + 1);
+    start.setDate(now.getDate() - dayOfWeek);
     start.setHours(0, 0, 0, 0);
 
     const end = new Date(start);
@@ -134,74 +143,74 @@ const Dashboard: React.FC<DashboardProps> = ({
   }, [expenses, incomes, dataType, selectedPeriod, selectedSlice]);
 
   return (
-    <View
-  style={{
-    flex: 1,
-    alignItems: "center", // centraliza horizontalmente (eixo X)
-    justifyContent: "center", // centraliza verticalmente (eixo Y)
-    marginTop: -9, // aumenta valor positivo pra descer / negativo pra subir
-    marginRight: 16
-}}>
+    <View style={styles.container}>
       {/* Botão de abrir modal */}
-      <View style={{ position: "absolute", top: 14, left: -10, zIndex: 10 }}>
+      <View style={styles.modalButtonContainer}>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Ionicons
-            name={dataType === "expense" ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
-            size={28}
+            name={
+              dataType === "expense"
+                ? "arrow-down-circle-outline"
+                : "arrow-up-circle-outline"
+            }
+            size={30}
             color={Colors.darkBrown}
           />
         </TouchableOpacity>
       </View>
 
-      <PieChart
-        data={
-          pieData.length > 0
-            ? pieData
-            : [{ id: "empty", value: 1, color: "transparent", text: "", percentage: 100 }]
-        }
-        donut
-        showGradient
-        sectionAutoFocus
-        radius={71}
-        innerRadius={46}
-        innerCircleColor={Colors.background}
-        focusOnPress
-        centerLabelComponent={() => {
-          if (!selectedSlice) {
+      {/* Gráfico alinhado à direita e menor */}
+      <View style={styles.chartContainer}>
+        <PieChart
+          data={
+            pieData.length > 0
+              ? pieData
+              : [{ id: "empty", value: 1, color: "transparent", text: "", percentage: 100 }]
+          }
+          donut
+          showGradient
+          sectionAutoFocus
+          radius={width * 0.13}          // 🔹 menor raio
+          innerRadius={width * 0.08}     // 🔹 buraco proporcional
+          innerCircleColor={Colors.background}
+          focusOnPress
+          centerLabelComponent={() => {
+            if (!selectedSlice) {
+              return (
+                <View style={{ justifyContent: "center", alignItems: "center" }}>
+                  <Text style={{ fontSize: 16, color: Colors.darkBrown, fontWeight: "bold" }}>
+                    {selectedPeriod === 0
+                      ? "Semana"
+                      : getLastThreeMonths()[selectedPeriod - 1].name}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: Colors.textSecondary }}>Resumo</Text>
+                </View>
+              );
+            }
+
+            const slice = pieData.find((p) => p.id === selectedSlice);
+            if (!slice) return null;
+
             return (
               <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <Text style={{ fontSize: 22, color: Colors.darkBrown, fontWeight: "bold" }}>
-                  {selectedPeriod === 0
-                    ? "Semana"
-                    : getLastThreeMonths()[selectedPeriod - 1].name}
+                <Text style={{ color: Colors.darkBrown, fontSize: 14, fontWeight: "700" }}>
+                  {slice.text}
                 </Text>
-                <Text style={{ fontSize: 14, color: Colors.textSecondary }}>Resumo</Text>
+                <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>
+                  R${slice.value.toFixed(2)}
+                </Text>
+                <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>
+                  {slice.percentage.toFixed(0)}%
+                </Text>
               </View>
             );
-          }
-
-          const slice = pieData.find((p) => p.id === selectedSlice);
-          if (!slice) return null;
-
-          return (
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: Colors.darkBrown, fontSize: 18, fontWeight: "700" }}>
-                {slice.text}
-              </Text>
-              <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
-                R${slice.value.toFixed(2)}
-              </Text>
-              <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
-                {slice.percentage.toFixed(0)}%
-              </Text>
-            </View>
-          );
-        }}
-        onPress={(slice: PieSlice) => {
-          const newSelected = selectedSlice === slice.id ? null : slice.id;
-          onSelectSlice(newSelected);
-        }}
-      />
+          }}
+          onPress={(slice: PieSlice) => {
+            const newSelected = selectedSlice === slice.id ? null : slice.id;
+            onSelectSlice(newSelected);
+          }}
+        />
+      </View>
 
       {/* Modal */}
       <Modal
@@ -210,87 +219,100 @@ const Dashboard: React.FC<DashboardProps> = ({
         animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
           <View style={styles.modalPanel}>
-            <Text style={styles.modalTitle}>Selecionar Período</Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 30 }}
+            >
+              <Text style={styles.modalTitle}>Selecionar Período</Text>
 
-            {getLastThreeMonths().map((m, index) => (
+              {getLastThreeMonths().map((m, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor:
+                        selectedPeriod === index + 1 ? Colors.tintcolor : Colors.grey,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedPeriod(index + 1);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>{m.name}</Text>
+                </TouchableOpacity>
+              ))}
+
               <TouchableOpacity
-                key={index}
                 style={[
                   styles.modalButton,
                   {
                     backgroundColor:
-                      selectedPeriod === index + 1 ? Colors.tintcolor : Colors.grey,
+                      selectedPeriod === 0 ? Colors.tintcolor : Colors.grey,
                   },
                 ]}
                 onPress={() => {
-                  setSelectedPeriod(index + 1);
+                  setSelectedPeriod(0);
                   setModalVisible(false);
                 }}
               >
-                <Text style={styles.modalButtonText}>{m.name}</Text>
+                <Text style={styles.modalButtonText}>Última Semana</Text>
               </TouchableOpacity>
-            ))}
 
-            <TouchableOpacity
-              style={[
-                styles.modalButton,
-                {
-                  backgroundColor:
-                    selectedPeriod === 0 ? Colors.tintcolor : Colors.grey,
-                },
-              ]}
-              onPress={() => {
-                setSelectedPeriod(0);
-                setModalVisible(false);
-              }}
-            >
-              <Text style={styles.modalButtonText}>Última Semana</Text>
-            </TouchableOpacity>
+              <Text style={[styles.modalTitle, { marginTop: 10 }]}>Tipo de dado</Text>
+              <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor:
+                        dataType === "expense" ? Colors.tintcolor : Colors.grey,
+                      width: "45%",
+                    },
+                  ]}
+                  onPress={() => setDataType("expense")}
+                >
+                  <Text style={styles.modalButtonText}>Gasto</Text>
+                </TouchableOpacity>
 
-            <Text style={[styles.modalTitle, { marginTop: 10 }]}>Tipo de dado</Text>
-            <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                <TouchableOpacity
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor:
+                        dataType === "income" ? Colors.tintcolor : Colors.grey,
+                      width: "45%",
+                    },
+                  ]}
+                  onPress={() => setDataType("income")}
+                >
+                  <Text style={styles.modalButtonText}>Receita</Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
                 style={[
                   styles.modalButton,
-                  {
-                    backgroundColor:
-                      dataType === "expense" ? Colors.tintcolor : Colors.grey,
-                    width: "45%",
-                  },
+                  { backgroundColor: Colors.lightBrown, marginTop: 10 },
                 ]}
-                onPress={() => setDataType("expense")}
+                onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>Gasto</Text>
+                <Text style={styles.modalButtonText}>Fechar</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  {
-                    backgroundColor:
-                      dataType === "income" ? Colors.tintcolor : Colors.grey,
-                    width: "45%",
-                  },
-                ]}
-                onPress={() => setDataType("income")}
-              >
-                <Text style={styles.modalButtonText}>Receita</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.modalButton,
-                { backgroundColor: Colors.lightBrown, marginTop: 10 },
-              ]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.modalButtonText}>Fechar</Text>
-            </TouchableOpacity>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -299,17 +321,37 @@ const Dashboard: React.FC<DashboardProps> = ({
 export default Dashboard;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "flex-end", // 🔹 alinha tudo à direita
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingRight: 20,
+  },
+  chartContainer: {
+  height: 180,
+  justifyContent: "center",
+  alignItems: "center", // centraliza sempre horizontalmente
+},
+  modalButtonContainer: {
+    position: "absolute",
+    top: 14,
+    left: 20,
+    zIndex: 10,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 15,
   },
   modalPanel: {
     backgroundColor: Colors.white,
     padding: 20,
     borderRadius: 15,
-    width: "80%",
+    width: "90%",
+    maxHeight: "80%",
   },
   modalTitle: {
     color: Colors.darkBrown,

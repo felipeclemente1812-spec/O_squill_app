@@ -7,6 +7,11 @@ import {
   TextInput,
   ScrollView,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Dimensions
 } from "react-native";
 import React from "react";
 import Colors from "@/constants/Colors";
@@ -26,6 +31,13 @@ export interface ExpenseType {
 interface ExpenseBlockProps {
   onChange?: (newExpenses: ExpenseType[]) => void;
 }
+
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+const BLOCK_WIDTH = SCREEN_WIDTH < 360 ? 120 : 150; // diminui em telas pequenas
+const MODAL_WIDTH = SCREEN_WIDTH < 360 ? "95%" : "90%"; // modal ligeiramente maior em telas pequenas
+const INPUT_FONT = SCREEN_WIDTH < 360 ? 12 : 14;
 
 const categories = [
   { key: "house", label: "Casa", icon: Icons.house, color: Colors.house },
@@ -280,14 +292,24 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
         </ScrollView>
       </View>
       {/* Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+<Modal
+  visible={modalVisible}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setModalVisible(false)}
+>
+  <KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : undefined}
+  style={{ flex: 1 }}
+>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
             <Text
               style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}
             >
@@ -327,9 +349,7 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
               }}
             />
 
-            <Text
-              style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}
-            >
+            <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>
               Categoria:
             </Text>
 
@@ -347,9 +367,7 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
                     style={[
                       styles.categoryButton,
                       {
-                        backgroundColor: selected
-                          ? Colors.tintcolor
-                          : Colors.grey,
+                        backgroundColor: selected ? Colors.tintcolor : Colors.grey,
                       },
                     ]}
                   >
@@ -376,18 +394,21 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
                 </Text>
               </TouchableOpacity>
             )}
+          </ScrollView>
 
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={{ padding: 10 }}
-            >
-              <Text style={{ color: Colors.white, textAlign: "center" }}>
-                Cancelar
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => setModalVisible(false)}
+            style={{ padding: 10 }}
+          >
+            <Text style={{ color: Colors.white, textAlign: "center" }}>
+              Cancelar
+            </Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+</Modal>
     </View>
   );
 };
@@ -395,28 +416,27 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
 export default ExpenseBlock;
 
 const styles = StyleSheet.create({
-container: {
-  width: "100%",
-  backgroundColor: Colors.lightBackground,
-  borderRadius: 16,
-  paddingHorizontal: 20,
-  paddingVertical: 0, // menor e efetivo
-  marginVertical: 0,   // reduz espaço externo
-  shadowColor: Colors.darkBrown,
-  shadowOffset: { width: 0, height: 2 },
-  borderWidth: 3,
-  borderColor: Colors.brown,
-  borderStyle: "solid",
-  flexDirection: "column",
-  alignItems: "flex-start",
-},
-
+  container: {
+    width: "100%",
+    backgroundColor: Colors.lightBackground,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 0,
+    marginVertical: 0,
+    shadowColor: Colors.darkBrown,
+    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 3,
+    borderColor: Colors.brown,
+    borderStyle: "solid",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
   scrollContainer: {
     paddingVertical: 8,
     gap: 12,
   },
   block: {
-    width: 150,
+    width: BLOCK_WIDTH,
     borderRadius: 20,
     padding: 10,
     marginRight: 10,
@@ -477,14 +497,15 @@ container: {
     backgroundColor: "rgba(0,0,0,0.9)",
     padding: 20,
     borderRadius: 15,
-    width: "90%",
+    width: MODAL_WIDTH,
+    maxHeight: SCREEN_HEIGHT * 0.85,
   },
   input: {
     color: Colors.white,
     borderBottomWidth: 1,
     borderColor: Colors.white,
     marginBottom: 10,
-    fontSize: 14,
+    fontSize: INPUT_FONT,
   },
   categoryButton: {
     flex: 1,
@@ -494,7 +515,7 @@ container: {
     borderRadius: 10,
   },
   categoryLabel: {
-    color: Colors.white,
+    color:'#000',
     fontSize: 11,
     marginTop: 3,
     textAlign: "center",

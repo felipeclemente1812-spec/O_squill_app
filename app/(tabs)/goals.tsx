@@ -1,18 +1,22 @@
+import Colors from "@/constants/Colors";
+import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  ScrollView,
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Colors from "@/constants/Colors";
-import { Stack } from "expo-router";
-import { Feather } from "@expo/vector-icons";
 
 export interface Goal {
   id: string;
@@ -50,7 +54,8 @@ const GoalsScreen = () => {
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [addAmount, setAddAmount] = useState("");
 
-  // Carrega metas
+  const [modos, setModos] = useState<{ [id: string]: "mes" | "dia" }>({});
+
   useEffect(() => {
     const loadGoals = async () => {
       try {
@@ -63,7 +68,6 @@ const GoalsScreen = () => {
     loadGoals();
   }, []);
 
-  // Salva metas
   const saveGoals = async (newGoals: Goal[]) => {
     try {
       setGoals(newGoals);
@@ -73,7 +77,6 @@ const GoalsScreen = () => {
     }
   };
 
-  // Adicionar ou editar meta
   const handleSave = () => {
     if (!name || !value || !targetDate) {
       Alert.alert("Campos obrigatórios", "Preencha todos os campos!");
@@ -99,7 +102,6 @@ const GoalsScreen = () => {
     closeModal();
   };
 
-  // Adiciona valor a uma meta
   const handleAddValue = () => {
     if (!addAmount || isNaN(parseFloat(addAmount))) {
       Alert.alert("Valor inválido", "Digite um valor válido.");
@@ -119,7 +121,6 @@ const GoalsScreen = () => {
     setAddValueModal(false);
   };
 
-  // Excluir meta
   const handleDelete = (id: string) => {
     Alert.alert("Confirmar exclusão", "Deseja realmente excluir esta meta?", [
       { text: "Cancelar", style: "cancel" },
@@ -135,7 +136,6 @@ const GoalsScreen = () => {
     ]);
   };
 
-  // Modal de nova meta
   const openAddModal = () => {
     setEditingGoal(null);
     setName("");
@@ -146,7 +146,6 @@ const GoalsScreen = () => {
     setModalVisible(true);
   };
 
-  // Modal de edição
   const openEditModal = (goal: Goal) => {
     setEditingGoal(goal);
     setName(goal.name);
@@ -162,30 +161,44 @@ const GoalsScreen = () => {
     setEditingGoal(null);
   };
 
-  // Formatar data como dd/mm/yy
   const handleDateChange = (text: string) => {
     let cleaned = text.replace(/\D/g, "");
     if (cleaned.length > 2 && cleaned.length <= 4)
       cleaned = `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
     else if (cleaned.length > 4)
-      cleaned = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 6)}`;
+      cleaned = `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(
+        4,
+        6
+      )}`;
     setTargetDate(cleaned);
   };
 
-  // Tempo restante
   const getTimeRemaining = (targetDate: string) => {
-    const [dd, mm, yy] = targetDate.split("/").map(Number);
-    const formattedYear = yy < 100 ? 2000 + yy : yy;
-    const target = new Date(formattedYear, mm - 1, dd);
-    const now = new Date();
-    const diff = target.getTime() - now.getTime();
-    if (diff <= 0) return "Encerrada";
+  const [dd, mm, yy] = targetDate.split("/").map(Number);
+  const formattedYear = yy < 100 ? 2000 + yy : yy;
+  const target = new Date(formattedYear, mm - 1, dd);
+  const now = new Date();
+  const diff = target.getTime() - now.getTime();
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days < 30) return `${days} dia${days > 1 ? "s" : ""}`;
-    if (days < 365) return `${Math.floor(days / 30)} mês(es)`;
-    return `${Math.floor(days / 365)} ano(s)`;
-  };
+  if (diff <= 0) return "Encerrada";
+
+  const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const years = Math.floor(totalDays / 365);
+  const months = Math.floor((totalDays % 365) / 30);
+  const days = totalDays - years * 365 - months * 30;
+
+  const parts = [];
+  if (years > 0) parts.push(`${years} ano${years > 1 ? "s" : ""}`);
+  if (months > 0) parts.push(`${months} mês${months > 1 ? "es" : ""}`);
+  if (days > 0) parts.push(`${days} dia${days > 1 ? "s" : ""}`);
+
+  // junta com "e" entre os dois últimos valores
+  if (parts.length > 1) {
+    const last = parts.pop();
+    return `${parts.join(", ")} e ${last}`;
+  }
+  return parts[0] || "0 dias";
+};
 
   return (
     <>
@@ -196,8 +209,12 @@ const GoalsScreen = () => {
 
         {goals.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Você ainda não tem metas cadastradas</Text>
-            <Text style={styles.emptySubText}>Clique em "Incluir Meta" para começar.</Text>
+            <Text style={styles.emptyText}>
+              Você ainda não tem metas cadastradas
+            </Text>
+            <Text style={styles.emptySubText}>
+              Clique em "Incluir Meta" para começar.
+            </Text>
           </View>
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
@@ -208,6 +225,29 @@ const GoalsScreen = () => {
                 100
               );
 
+              const [dd, mm, yy] = goal.targetDate.split("/").map(Number);
+              const formattedYear = yy < 100 ? 2000 + yy : yy;
+              const target = new Date(formattedYear, mm - 1, dd);
+              const now = new Date();
+              const diffDays = Math.max(
+                Math.floor(
+                  (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+                ),
+                1
+              );
+              const diffMonths = Math.max(diffDays / 30, 1);
+              const faltando = Math.max(goal.targetValue - goal.currentValue, 0);
+
+              const modo = modos[goal.id] || "mes";
+              const valorPorTempo =
+                modo === "mes" ? faltando / diffMonths : faltando / diffDays;
+
+              const alternarModo = () =>
+                setModos((prev) => ({
+                  ...prev,
+                  [goal.id]: prev[goal.id] === "mes" ? "dia" : "mes",
+                }));
+
               return (
                 <View
                   key={goal.id}
@@ -215,16 +255,69 @@ const GoalsScreen = () => {
                 >
                   <View style={styles.goalHeader}>
                     <Text style={styles.goalTitle}>{goal.name}</Text>
-                    <TouchableOpacity onPress={() => openEditModal(goal)}>
-                      <Feather name="more-vertical" size={20} color={Colors.white} />
-                    </TouchableOpacity>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedGoal(goal);
+                          setAddValueModal(true);
+                        }}
+                        style={styles.headerAddButton}
+                      >
+                        <Feather name="plus" size={18} color={Colors.white} />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity onPress={() => openEditModal(goal)}>
+                        <Feather
+                          name="more-vertical"
+                          size={20}
+                          color={Colors.white}
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
                   <Text style={styles.goalRemaining}>{remaining}</Text>
 
-                  {goal.description ? (
-                    <Text style={styles.goalDesc}>{goal.description}</Text>
-                  ) : null}
+                  {(goal.description || valorPorTempo > 0) && (
+                    <View style={styles.descAndSavingRow}>
+                      {goal.description ? (
+                        <Text
+                          style={[styles.goalDesc, { flexShrink: 1, flex: 1 }]}
+                          numberOfLines={2}
+                        >
+                          {goal.description}
+                        </Text>
+                      ) : (
+                        <View style={{ flex: 1 }} />
+                      )}
+
+                      <View style={styles.inlineSavingRow}>
+                        <Text style={styles.savingText}>
+                          R${valorPorTempo.toFixed(2)} /{" "}
+                          {modo === "mes" ? "mês" : "dia"}
+                        </Text>
+                        <TouchableOpacity onPress={alternarModo}>
+                          <Feather
+                            name="chevron-down"
+                            size={16}
+                            color={Colors.white}
+                            style={{
+                              transform: [
+                                { rotate: modo === "mes" ? "0deg" : "180deg" },
+                              ],
+                            }}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
 
                   <View style={styles.progressBar}>
                     <View
@@ -240,16 +333,6 @@ const GoalsScreen = () => {
                       R${goal.targetValue.toFixed(2)}
                     </Text>
                   </View>
-
-                  <TouchableOpacity
-                    style={styles.addMoneyButton}
-                    onPress={() => {
-                      setSelectedGoal(goal);
-                      setAddValueModal(true);
-                    }}
-                  >
-                    <Feather name="plus" size={18} color={Colors.white} />
-                  </TouchableOpacity>
                 </View>
               );
             })}
@@ -262,113 +345,142 @@ const GoalsScreen = () => {
 
         {/* Modal de criação/edição */}
         <Modal visible={modalVisible} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>
-                {editingGoal ? "Editar Meta" : "Nova Meta"}
-              </Text>
-
-              <TextInput
-                placeholder="Nome da meta"
-                placeholderTextColor="#aaa"
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-              />
-
-              <TextInput
-                placeholder="Descrição (opcional)"
-                placeholderTextColor="#aaa"
-                style={styles.input}
-                value={description}
-                onChangeText={setDescription}
-              />
-
-              <TextInput
-                placeholder="Valor que deseja atingir (R$)"
-                placeholderTextColor="#aaa"
-                style={styles.input}
-                keyboardType="numeric"
-                value={value}
-                onChangeText={setValue}
-              />
-
-              <TextInput
-                placeholder="Prazo (dd/mm/yy)"
-                placeholderTextColor="#aaa"
-                style={styles.input}
-                keyboardType="numeric"
-                value={targetDate}
-                onChangeText={handleDateChange}
-                maxLength={8}
-              />
-
-              <Text style={styles.colorLabel}>Escolha uma cor:</Text>
-              <View style={styles.colorRow}>
-                {PRESET_COLORS.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    style={[
-                      styles.colorCircle,
-                      { backgroundColor: c },
-                      color === c && styles.selectedColor,
-                    ]}
-                    onPress={() => setColor(c)}
-                  />
-                ))}
-              </View>
-
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Salvar</Text>
-              </TouchableOpacity>
-
-              {editingGoal && (
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleDelete(editingGoal.id)}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={{ width: "100%" }}
+              >
+                <ScrollView
+                  contentContainerStyle={{
+                    alignItems: "center",
+                    paddingVertical: 20,
+                  }}
                 >
-                  <Text style={styles.saveButtonText}>Excluir</Text>
-                </TouchableOpacity>
-              )}
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>
+                      {editingGoal ? "Editar Meta" : "Nova Meta"}
+                    </Text>
 
-              <TouchableOpacity onPress={closeModal} style={{ padding: 10 }}>
-                <Text style={{ color: Colors.white, textAlign: "center" }}>
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
+                    <TextInput
+                      placeholder="Nome da meta"
+                      placeholderTextColor="#555"
+                      style={styles.input}
+                      value={name}
+                      onChangeText={setName}
+                    />
+
+                    <TextInput
+                      placeholder="Descrição (opcional)"
+                      placeholderTextColor="#555"
+                      style={styles.input}
+                      value={description}
+                      onChangeText={setDescription}
+                    />
+
+                    <TextInput
+                      placeholder="Valor que deseja atingir (R$)"
+                      placeholderTextColor="#555"
+                      style={styles.input}
+                      keyboardType="numeric"
+                      value={value}
+                      onChangeText={setValue}
+                    />
+
+                    <TextInput
+                      placeholder="Prazo (dd/mm/yy)"
+                      placeholderTextColor="#555"
+                      style={styles.input}
+                      keyboardType="numeric"
+                      value={targetDate}
+                      onChangeText={handleDateChange}
+                      maxLength={8}
+                    />
+
+                    <Text style={styles.colorLabel}>Escolha uma cor:</Text>
+                    <View style={styles.colorRow}>
+                      {PRESET_COLORS.map((c) => (
+                        <TouchableOpacity
+                          key={c}
+                          style={[
+                            styles.colorCircle,
+                            { backgroundColor: c },
+                            color === c && styles.selectedColor,
+                          ]}
+                          onPress={() => setColor(c)}
+                        />
+                      ))}
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.saveButton}
+                      onPress={handleSave}
+                    >
+                      <Text style={styles.saveButtonText}>Salvar</Text>
+                    </TouchableOpacity>
+
+                    {editingGoal && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDelete(editingGoal.id)}
+                      >
+                        <Text style={styles.saveButtonText}>Excluir</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      onPress={closeModal}
+                      style={{ padding: 10 }}
+                    >
+                      <Text
+                        style={{ color: Colors.white, textAlign: "center" }}
+                      >
+                        Cancelar
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </KeyboardAvoidingView>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
 
-        {/* Modal de adicionar dinheiro */}
+        {/* Modal adicionar valor */}
         <Modal visible={addValueModal} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Adicionar valor à meta</Text>
-              <TextInput
-                placeholder="Valor (R$)"
-                placeholderTextColor="#aaa"
-                style={styles.input}
-                keyboardType="numeric"
-                value={addAmount}
-                onChangeText={setAddAmount}
-              />
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleAddValue}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={{ width: "100%" }}
               >
-                <Text style={styles.saveButtonText}>Adicionar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setAddValueModal(false)}
-                style={{ padding: 10 }}
-              >
-                <Text style={{ color: Colors.white, textAlign: "center" }}>
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Adicionar valor à meta</Text>
+                  <TextInput
+                    placeholder="Valor (R$)"
+                    placeholderTextColor="#555"
+                    style={styles.input}
+                    keyboardType="numeric"
+                    value={addAmount}
+                    onChangeText={setAddAmount}
+                  />
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={handleAddValue}
+                  >
+                    <Text style={styles.saveButtonText}>Adicionar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setAddValueModal(false)}
+                    style={{ padding: 10 }}
+                  >
+                    <Text style={{ color: Colors.white, textAlign: "center" }}>
+                      Cancelar
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </View>
     </>
@@ -378,22 +490,22 @@ const GoalsScreen = () => {
 export default GoalsScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.black, padding: 20 },
+  container: { flex: 1, backgroundColor: Colors.background, padding: 20 },
   title: {
     textAlign: "center",
     fontSize: 26,
     fontWeight: "bold",
-    color: Colors.white,
+    color: Colors.brown,
     marginVertical: 10,
   },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { color: Colors.white, fontSize: 18, fontWeight: "bold" },
-  emptySubText: { color: "#aaa", fontSize: 14, marginTop: 4 },
+  emptyText: { color: Colors.text, fontSize: 18, fontWeight: "700" },
+  emptySubText: { color: Colors.textSecondary, fontSize: 14, marginTop: 4 },
   goalBox: {
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 12,
-    position: "relative",
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
   goalHeader: {
     flexDirection: "row",
@@ -406,17 +518,33 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   goalRemaining: {
-    color: "#f9e48d",
+    color: "#fff",
     fontSize: 13,
   },
   goalDesc: {
-    color: "#ddd",
+    color: "#f8f8f8",
     fontSize: 13,
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  descAndSavingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+    gap: 8,
+  },
+  inlineSavingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  savingText: {
+    color: Colors.white,
+    fontSize: 13,
   },
   progressBar: {
     height: 18,
-    backgroundColor: "#f9e48d",
+    backgroundColor: "#fff8c2",
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -430,14 +558,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   progressValue: { color: Colors.white, fontSize: 13 },
-  addMoneyButton: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    padding: 6,
-    borderRadius: 20,
-  },
   addButton: {
     backgroundColor: "#6b4d1f",
     paddingVertical: 14,
@@ -457,13 +577,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.7)",
   },
   modalContent: {
-    backgroundColor: Colors.grey,
+    backgroundColor: "rgba(0,0,0,0.7)",
     width: "90%",
     borderRadius: 15,
     padding: 20,
+    borderWidth: 3,
+    borderColor: Colors.brown,
   },
   modalTitle: {
     color: Colors.white,
@@ -473,11 +595,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   input: {
-    color: Colors.white,
-    borderBottomWidth: 1,
-    borderColor: "#999",
+    color: "#000",
+    backgroundColor: Colors.white,
+    borderRadius: 8,
     marginBottom: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
   colorLabel: {
     color: Colors.white,
@@ -506,10 +629,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   deleteButton: {
-    backgroundColor: "#ff3333",
+    backgroundColor: "#e63946",
     padding: 10,
     borderRadius: 10,
-    marginTop: 10,
+    marginTop: 8,
   },
-  saveButtonText: { color: Colors.white, textAlign: "center" },
+  saveButtonText: {
+    color: Colors.white,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  headerAddButton: {
+    padding: 4,
+  },
 });

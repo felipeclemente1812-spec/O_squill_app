@@ -1,4 +1,3 @@
-// app/register.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -7,6 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
@@ -22,9 +24,7 @@ export default function RegisterScreen() {
 
   const validarEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
   const validarSenha = (senha: string) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(
-      senha
-    );
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/.test(senha);
 
   const handleRegister = async () => {
     if (!nome || !email || !senha)
@@ -43,94 +43,106 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>SQUILL</Text>
-      <Text style={styles.subtitle}>
-        Preencha as informações e tenha acesso ao nosso aplicativo!
-      </Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#f2f2f2" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          <Text style={styles.logo}>SQUILL</Text>
+          <Text style={styles.subtitle}>
+            Preencha as informações e tenha acesso ao nosso aplicativo!
+          </Text>
 
-      <TextInput
-        placeholder="Nome Completo"
-        placeholderTextColor="#888"
-        style={styles.input}
-        value={nome}
-        onChangeText={setNome}
-      />
+          <TextInput
+            placeholder="Nome Completo"
+            placeholderTextColor="#888"
+            style={styles.input}
+            value={nome}
+            onChangeText={setNome}
+          />
 
-      <TextInput
-        placeholder="E-mail"
-        placeholderTextColor="#888"
-        style={styles.input}
-        value={email}
-        onChangeText={(text) => {
-          setEmail(text);
-          setEmailValido(validarEmail(text));
-        }}
-      />
+          <TextInput
+            placeholder="E-mail"
+            placeholderTextColor="#888"
+            style={styles.input}
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              setEmailValido(validarEmail(text));
+            }}
+            autoCapitalize="none"
+          />
 
-      {email.length > 0 && (
-        <Text
-          style={[
-            styles.feedback,
-            { color: emailValido ? "#1f8a1f" : "#cc2e2e" },
-          ]}
-        >
-          {emailValido ? "E-mail válido ✅" : "E-mail inválido ❌"}
-        </Text>
-      )}
+          {email.length > 0 && (
+            <Text
+              style={[
+                styles.feedback,
+                { color: emailValido ? "#1f8a1f" : "#cc2e2e" },
+              ]}
+            >
+              {emailValido ? "E-mail válido ✅" : "E-mail inválido ❌"}
+            </Text>
+          )}
 
-      <TextInput
-        placeholder="Senha"
-        placeholderTextColor="#888"
-        style={styles.input}
-        secureTextEntry
-        value={senha}
-        onChangeText={(text) => {
-          setSenha(text);
-          setSenhaValida(validarSenha(text));
-        }}
-      />
+          <TextInput
+            placeholder="Senha"
+            placeholderTextColor="#888"
+            style={styles.input}
+            secureTextEntry
+            value={senha}
+            onChangeText={(text) => {
+              setSenha(text);
+              setSenhaValida(validarSenha(text));
+            }}
+          />
 
-      {senha.length > 0 && (
-        <Text
-          style={[
-            styles.feedback,
-            { color: senhaValida ? "#1f8a1f" : "#cc2e2e" },
-          ]}
-        >
-          {senhaValida
-            ? "Senha forte ✅"
-            : "Senha deve conter 8+ caracteres, maiúscula, minúscula, número e símbolo ❌"}
-        </Text>
-      )}
+          {senha.length > 0 && (
+            <Text
+              style={[
+                styles.feedback,
+                { color: senhaValida ? "#1f8a1f" : "#cc2e2e" },
+              ]}
+            >
+              {senhaValida
+                ? "Senha forte ✅"
+                : "Senha deve conter 8+ caracteres, maiúscula, minúscula, número e símbolo ❌"}
+            </Text>
+          )}
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>CRIAR CONTA</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>CRIAR CONTA</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.link}>Já tem conta? Entrar</Text>
-      </TouchableOpacity>
-    </View>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.link}>Já tem conta? Entrar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f2f2f2",
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: "center",
-    alignItems: "center",
     paddingHorizontal: 25,
+  },
+  container: {
+    alignItems: "center",
   },
   logo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#7b4b1d", // marrom escuro
+    color: "#7b4b1d",
     marginBottom: 6,
   },
   subtitle: {
-    color: "#a36c35", // marrom mais claro
+    color: "#a36c35",
     fontSize: 13,
     marginBottom: 25,
     textAlign: "center",
