@@ -493,14 +493,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, padding: 20 },
   title: {
     textAlign: "center",
-    fontSize: 26,
+    fontSize: 34,
     fontWeight: "bold",
     color: Colors.brown,
     marginVertical: 10,
   },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyText: { color: Colors.text, fontSize: 18, fontWeight: "700" },
-  emptySubText: { color: Colors.textSecondary, fontSize: 14, marginTop: 4 },
+  emptySubText: { color: Colors.textSecondary, fontSize: 28, marginTop: 4, fontWeight:'700' },
   goalBox: {
     borderRadius: 12,
     paddingVertical: 8,

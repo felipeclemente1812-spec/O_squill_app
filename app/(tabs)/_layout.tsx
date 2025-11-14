@@ -40,7 +40,7 @@ const Layout = () => {
 
             tabBarShowLabel: false,
             tabBarInactiveTintColor: "#000000ff",
-            tabBarActiveTintColor: '#743b0dff',
+            tabBarActiveTintColor: '#492201ff',
             headerShown: false,
           }}
         >

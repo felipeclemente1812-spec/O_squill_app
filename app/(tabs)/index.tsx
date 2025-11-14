@@ -86,7 +86,10 @@ const Page = () => {
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.scrollContainer, { paddingBottom: 80 }]} // 👈 aqui
+          contentContainerStyle={[
+            styles.scrollContainer,
+            { paddingBottom: 80 },
+          ]} // 👈 aqui
           keyboardShouldPersistTaps="handled"
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -95,14 +98,22 @@ const Page = () => {
               <View style={styles.headerSection}>
                 {/* 🔹 Bloco Total */}
                 <View style={styles.totalBlock}>
-                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: 3,
+                    }}
+                  >
                     <Text style={styles.titleText}>
                       Total de{" "}
                       <Text style={styles.titleHighlight}>
                         {showExpenses ? "Despesas" : "Receitas"}
                       </Text>
                       {"\n"}
-                      <Text style={[styles.subtitleText, { fontWeight: "700" }]}>
+                      <Text
+                        style={[styles.subtitleText, { fontWeight: "700" }]}
+                      >
                         (últimos 7 dias)
                       </Text>
                     </Text>
@@ -127,21 +138,25 @@ const Page = () => {
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.totalValue}>R${totalValue.toFixed(2)}</Text>
+                  <Text style={styles.totalValue}>
+                    R${totalValue.toFixed(2)}
+                  </Text>
                 </View>
 
                 {/* 🔹 Gráfico */}
                 <View style={styles.dashboardWrapper}>
-                  <Dashboard
-                    expenses={expenses}
-                    incomes={incomes}
-                    dataType={dataType}
-                    selectedPeriod={selectedPeriod}
-                    selectedSlice={selectedSlice}
-                    onSelectSlice={(sliceId) => setSelectedSlice(sliceId)}
-                    setDataType={setDataType}
-                    setSelectedPeriod={setSelectedPeriod}
-                  />
+                  <View style={[styles.dashboardWrapper, { flex: 1 }]}>
+                    <Dashboard
+                      expenses={expenses}
+                      incomes={incomes}
+                      dataType={dataType}
+                      selectedPeriod={selectedPeriod}
+                      selectedSlice={selectedSlice}
+                      onSelectSlice={(sliceId) => setSelectedSlice(sliceId)}
+                      setDataType={setDataType}
+                      setSelectedPeriod={setSelectedPeriod}
+                    />
+                  </View>
                 </View>
               </View>
 
@@ -202,9 +217,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dashboardWrapper: {
-    justifyContent: "flex-start",
-    alignItems: "center",
-    width: 150,
+    flex: 1, // ocupa todo o espaço disponível horizontalmente
+    justifyContent: "center", // centraliza verticalmente se quiser
+    alignItems: "flex-end", // para que fique à direita
+    marginRight: 10, // margem da borda direita
   },
   titleText: {
     color: Colors.text,

@@ -6,12 +6,13 @@ import {
   Modal,
   TextInput,
   ScrollView,
+  Pressable,
   FlatList,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import React from "react";
 import Colors from "@/constants/Colors";
@@ -202,215 +203,234 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
         : "0%",
   }));
 
-  return (
-    <View style={styles.container}>
-      <View style={{ marginVertical: 5, width: "100%" }}>
-        {/* Título com botão próximo */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 10,
-          }}
-        >
-          <Text
-            style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}
-          >
-            Despesas
-          </Text>
-          <TouchableOpacity
-            onPress={openAddModal}
-            style={[
-              styles.addButtonDashed,
-              {
-                marginLeft: 8,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                gap: 4,
-                borderWidth:2.2,
-                marginTop:8,
-                borderColor: Colors.text,
-
-              },
-            ]}
-          >
-            <Feather name="plus" size={18} color="#ccc" />
-            <Text style={{ color: Colors.text,fontWeight:'700', fontSize: 14 }}>Adicionar</Text>
-          </TouchableOpacity>
-        </View>
-
+return (
+  <View style={styles.container}>
+    <View style={{ marginVertical: 5, width: "100%" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
         <Text
-          style={{
-            color: Colors.textSecondary,
-            fontSize: 13,
-            fontWeight: "500",
-            marginBottom: 10,
-          }}
+          style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}
         >
-          Últimos gastos registrados
+          Despesas
         </Text>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
+        <TouchableOpacity
+          onPress={openAddModal}
+          style={[
+            styles.addButtonDashed,
+            {
+              marginLeft: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              gap: 4,
+              borderWidth: 2.2,
+              marginTop: 8,
+              borderColor: Colors.text,
+            },
+          ]}
         >
-          {weeklyExpensesWithPercent.map((item) => {
-            const category = getCategory(item.category);
-            const IconComp = category.icon;
-
-            return (
-              <View
-                key={item.id}
-                style={[styles.block, { backgroundColor: category.color }]}
-              >
-                <View style={styles.blockHeader}>
-                  <Text style={styles.dateText}>{item.date}</Text>
-                  <TouchableOpacity onPress={() => openEditModal(item)}>
-                    <Feather
-                      name="more-vertical"
-                      size={18}
-                      color={Colors.white}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.iconContainer}>
-                  <IconComp width={26} height={26} color={Colors.white} />
-                </View>
-
-                <Text style={styles.nameText}>{item.name}</Text>
-                <Text style={styles.categoryText}>{category.label}</Text>
-
-                <View style={styles.bottomInfo}>
-                  <Text style={styles.amountText}>R$ {item.amount}</Text>
-                  <Text style={styles.percentText}>{item.percentage}</Text>
-                </View>
-              </View>
-            );
-          })}
-        </ScrollView>
+          <Feather name="plus" size={18} color="#ccc" />
+          <Text style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}>
+            Adicionar
+          </Text>
+        </TouchableOpacity>
       </View>
-      {/* Modal */}
-<Modal
-  visible={modalVisible}
-  transparent
-  animationType="slide"
-  onRequestClose={() => setModalVisible(false)}
->
-  <KeyboardAvoidingView
-  behavior={Platform.OS === "ios" ? "padding" : undefined}
-  style={{ flex: 1 }}
->
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
-            <Text
-              style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}
-            >
-              {editingExpense ? "Editar gasto" : "Adicionar gasto"}
-            </Text>
 
-            <TextInput
-              placeholder="Nome"
-              placeholderTextColor="#aaa"
-              style={styles.input}
-              value={newName}
-              onChangeText={setNewName}
-            />
-            <TextInput
-              placeholder="Valor"
-              placeholderTextColor="#aaa"
-              keyboardType="numeric"
-              style={styles.input}
-              value={newAmount}
-              onChangeText={setNewAmount}
-            />
-            <TextInput
-              placeholder="Data"
-              placeholderTextColor="#aaa"
-              style={styles.input}
-              value={newDate}
-              keyboardType="numeric"
-              onChangeText={(text) => {
-                let cleaned = text.replace(/\D/g, "");
-                if (cleaned.length > 6) cleaned = cleaned.slice(0, 6);
-                let formatted = "";
-                if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
-                if (cleaned.length >= 3)
-                  formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
-                if (cleaned.length >= 5) formatted += "/" + cleaned.slice(4, 6);
-                setNewDate(formatted);
-              }}
-            />
+      <Text
+        style={{
+          color: Colors.textSecondary,
+          fontSize: 13,
+          fontWeight: "500",
+          marginBottom: 10,
+        }}
+      >
+        Últimos gastos registrados
+      </Text>
 
-            <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>
-              Categoria:
-            </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {expenses.map((item) => {
+  const category = getCategory(item.category);
+  const IconComp = category.icon;
 
-            <FlatList
-              data={categories}
-              numColumns={3}
-              scrollEnabled={false}
-              keyExtractor={(item) => item.key}
-              renderItem={({ item }) => {
-                const IconComp = item.icon;
-                const selected = selectedCategory === item.key;
-                return (
+  return (
+    <Pressable
+      key={item.id}
+      style={[styles.block, { backgroundColor: category.color }]}
+      onPressIn={() => {}} // mantém toque sem abrir modal
+    >
+      <View style={styles.blockHeader}>
+        <Text style={styles.dateText}>{item.date}</Text>
+
+        {/* Ícone que abre o modal */}
+        <Pressable onPress={() => openEditModal(item)}>
+          <Feather
+            name="more-vertical"
+            size={18}
+            color={Colors.white}
+          />
+        </Pressable>
+      </View>
+
+      <View style={styles.iconContainer}>
+        <IconComp width={26} height={26} color={Colors.white} />
+      </View>
+
+      <Text style={styles.nameText}>{item.name}</Text>
+      <Text style={styles.categoryText}>{category.label}</Text>
+
+      <View style={styles.bottomInfo}>
+        <Text style={styles.amountText}>R$ {item.amount}</Text>
+      </View>
+    </Pressable>
+  );
+})}
+      </ScrollView>
+    </View>
+
+    {/* ---------------- MODAL COMPLETO (copiado do 1º código) ---------------- */}
+    <Modal
+      visible={modalVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 20 }}
+              >
+                <Text
+                  style={{
+                    color: Colors.white,
+                    fontSize: 16,
+                    marginBottom: 10,
+                  }}
+                >
+                  {editingExpense ? "Editar gasto" : "Adicionar gasto"}
+                </Text>
+
+                <TextInput
+                  placeholder="Nome"
+                  placeholderTextColor="#aaa"
+                  style={styles.input}
+                  value={newName}
+                  onChangeText={setNewName}
+                />
+
+                <TextInput
+                  placeholder="Valor"
+                  placeholderTextColor="#aaa"
+                  keyboardType="numeric"
+                  style={styles.input}
+                  value={newAmount}
+                  onChangeText={setNewAmount}
+                />
+
+                <TextInput
+                  placeholder="Data"
+                  placeholderTextColor="#aaa"
+                  style={styles.input}
+                  value={newDate}
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    let cleaned = text.replace(/\D/g, "");
+                    if (cleaned.length > 6) cleaned = cleaned.slice(0, 6);
+
+                    let formatted = "";
+                    if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
+                    if (cleaned.length >= 3)
+                      formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
+                    if (cleaned.length >= 5)
+                      formatted += "/" + cleaned.slice(4, 6);
+
+                    setNewDate(formatted);
+                  }}
+                />
+
+                <Text
+                  style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}
+                >
+                  Categoria:
+                </Text>
+
+                <FlatList
+                  data={categories}
+                  numColumns={3}
+                  scrollEnabled={false}
+                  keyExtractor={(item) => item.key}
+                  renderItem={({ item }) => {
+                    const IconComp = item.icon;
+                    const selected = selectedCategory === item.key;
+
+                    return (
+                      <TouchableOpacity
+                        onPress={() => setSelectedCategory(item.key)}
+                        style={[
+                          styles.categoryButton,
+                          {
+                            backgroundColor: selected
+                              ? Colors.tintcolor
+                              : Colors.grey,
+                          },
+                        ]}
+                      >
+                        <IconComp width={30} height={30} color={Colors.white} />
+                        <Text style={styles.categoryLabel}>{item.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+
+                <TouchableOpacity onPress={handleSave} style={styles.addButton}>
+                  <Text style={{ color: Colors.white, textAlign: "center" }}>
+                    Salvar
+                  </Text>
+                </TouchableOpacity>
+
+                {editingExpense && (
                   <TouchableOpacity
-                    onPress={() => setSelectedCategory(item.key)}
-                    style={[
-                      styles.categoryButton,
-                      {
-                        backgroundColor: selected ? Colors.tintcolor : Colors.grey,
-                      },
-                    ]}
+                    onPress={() => deleteExpense(editingExpense.id)}
+                    style={styles.deleteButton}
                   >
-                    <IconComp width={30} height={30} color={Colors.white} />
-                    <Text style={styles.categoryLabel}>{item.label}</Text>
+                    <Text style={{ color: Colors.white, textAlign: "center" }}>
+                      Excluir
+                    </Text>
                   </TouchableOpacity>
-                );
-              }}
-            />
+                )}
+              </ScrollView>
 
-            <TouchableOpacity onPress={handleSave} style={styles.addButton}>
-              <Text style={{ color: Colors.white, textAlign: "center" }}>
-                Salvar
-              </Text>
-            </TouchableOpacity>
-
-            {editingExpense && (
               <TouchableOpacity
-                onPress={() => deleteExpense(editingExpense.id)}
-                style={styles.deleteButton}
+                onPress={() => setModalVisible(false)}
+                style={{ padding: 10 }}
               >
                 <Text style={{ color: Colors.white, textAlign: "center" }}>
-                  Excluir
+                  Cancelar
                 </Text>
               </TouchableOpacity>
-            )}
-          </ScrollView>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </Modal>
 
-          <TouchableOpacity
-            onPress={() => setModalVisible(false)}
-            style={{ padding: 10 }}
-          >
-            <Text style={{ color: Colors.white, textAlign: "center" }}>
-              Cancelar
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
-  </KeyboardAvoidingView>
-</Modal>
-    </View>
-  );
+  </View>
+);
 };
 
 export default ExpenseBlock;

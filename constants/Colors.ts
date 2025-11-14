@@ -11,7 +11,7 @@ const Colors = {
 
   // 🔹 Texto
   text: '#3E2412',       // texto principal
-  textSecondary: '#7B6A59', // texto secundário
+  textSecondary: '#795b3eff', // texto secundário
 
   // 🔹 Despesas / categorias
   house: "#8B5A2B",      // marrom bronze (casa)
@@ -25,7 +25,7 @@ const Colors = {
   tech: "#BC8F8F",       // rosado neutro (tech)
   gym: "#CDAA7D",        // bege quente (academia)
   tv: "#D2B48C",         // bege (streaming)
-  quest: "#EED8AE",      // amarelo claro (outros)
+  quest: "#df9100ff",      // amarelo claro (outros)
 
   // 🔹 Receitas / Income
   salario: "#6B8E23",    // verde oliva (salário)

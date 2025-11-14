@@ -2,7 +2,7 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   Modal,
   TextInput,
   ScrollView,
@@ -132,58 +132,116 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
       <View style={{ marginVertical: 5, width: "100%" }}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
           <Text style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}>Receitas</Text>
-          <TouchableOpacity
+          <Pressable
             onPress={openAddModal}
-            style={[styles.addButtonDashed, { marginLeft: 8, paddingHorizontal: 8, paddingVertical: 4, gap: 4, borderWidth: 2.2, marginTop: 8, borderColor: Colors.text }]}
+            style={[
+              styles.addButtonDashed,
+              {
+                marginLeft: 8,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                gap: 4,
+                borderWidth: 2.2,
+                marginTop: 8,
+                borderColor: Colors.text,
+              },
+            ]}
           >
-            <Feather name="plus" size={18} color="#ccc" />
+            <Feather name="plus" size={18} />
             <Text style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}>Adicionar</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
-        <Text style={{ color: Colors.textSecondary, fontSize: 13, fontWeight: "500", marginBottom: 10 }}>
+        <Text
+          style={{
+            color: Colors.textSecondary,
+            fontSize: 13,
+            fontWeight: "500",
+            marginBottom: 10,
+          }}
+        >
           Últimas receitas registradas
         </Text>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
           {income.map((item) => {
             const category = getCategory(item.category);
             const IconComp = category.icon;
             return (
-              <View key={item.id} style={[styles.block, { backgroundColor: category.color }]}>
+              <Pressable
+                key={item.id}
+                style={[styles.block, { backgroundColor: category.color }]}
+                onPressIn={() => {}} // mantém feedback mas não abre modal
+              >
                 <View style={styles.blockHeader}>
                   <Text style={styles.dateText}>{item.date}</Text>
-                  <TouchableOpacity onPress={() => openEditModal(item)}>
+
+                  {/* Botão que ABRE modal */}
+                  <Pressable onPress={() => openEditModal(item)}>
                     <Feather name="more-vertical" size={18} color={Colors.white} />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
+
                 <View style={styles.iconContainer}>
-                  <IconComp width={26} height={26} color={'#000'} />
+                  <IconComp width={26} height={26} color={"#000"} />
                 </View>
+
                 <Text style={styles.nameText}>{item.name}</Text>
                 <Text style={styles.categoryText}>{category.label}</Text>
+
                 <View style={styles.bottomInfo}>
                   <Text style={styles.amountText}>R$ {item.amount}</Text>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </ScrollView>
       </View>
 
       {/* Modal */}
-      <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                >
                   <Text style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}>
                     {editingIncome ? "Editar receita" : "Adicionar receita"}
                   </Text>
 
-                  <TextInput placeholder="Nome" placeholderTextColor="#aaa" style={styles.input} value={newName} onChangeText={setNewName} />
-                  <TextInput placeholder="Valor" placeholderTextColor="#aaa" keyboardType="numeric" style={styles.input} value={newAmount} onChangeText={setNewAmount} />
+                  <TextInput
+                    placeholder="Nome"
+                    placeholderTextColor="#aaa"
+                    style={styles.input}
+                    value={newName}
+                    onChangeText={setNewName}
+                  />
+
+                  <TextInput
+                    placeholder="Valor"
+                    placeholderTextColor="#aaa"
+                    keyboardType="numeric"
+                    style={styles.input}
+                    value={newAmount}
+                    onChangeText={setNewAmount}
+                  />
+
                   <TextInput
                     placeholder="Data"
                     placeholderTextColor="#aaa"
@@ -200,7 +258,9 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                     }}
                   />
 
-                  <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>Categoria:</Text>
+                  <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>
+                    Categoria:
+                  </Text>
 
                   <FlatList
                     data={categories}
@@ -211,28 +271,37 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                       const selected = selectedCategory === item.key;
                       const IconComp = item.icon;
                       return (
-                        <TouchableOpacity onPress={() => setSelectedCategory(item.key)} style={[styles.categoryButton, { backgroundColor: selected ? Colors.tintcolor : Colors.grey }]}>
-                          <IconComp width={30} height={30} color={'#000'} />
+                        <Pressable
+                          onPress={() => setSelectedCategory(item.key)}
+                          style={[
+                            styles.categoryButton,
+                            { backgroundColor: selected ? Colors.tintcolor : Colors.grey },
+                          ]}
+                        >
+                          <IconComp width={30} height={30} color={"#000"} />
                           <Text style={styles.categoryLabel}>{item.label}</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       );
                     }}
                   />
 
-                  <TouchableOpacity onPress={handleSave} style={styles.addButton}>
+                  <Pressable onPress={handleSave} style={styles.addButton}>
                     <Text style={{ color: Colors.white, textAlign: "center" }}>Salvar</Text>
-                  </TouchableOpacity>
+                  </Pressable>
 
                   {editingIncome && (
-                    <TouchableOpacity onPress={() => deleteIncome(editingIncome.id)} style={styles.deleteButton}>
+                    <Pressable
+                      onPress={() => deleteIncome(editingIncome.id)}
+                      style={styles.deleteButton}
+                    >
                       <Text style={{ color: Colors.white, textAlign: "center" }}>Excluir</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
                 </ScrollView>
 
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ padding: 10 }}>
+                <Pressable onPress={() => setModalVisible(false)} style={{ padding: 10 }}>
                   <Text style={{ color: Colors.white, textAlign: "center" }}>Cancelar</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -244,6 +313,7 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
 
 export default IncomeBlock;
 
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     width: "100%",
@@ -262,6 +332,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingVertical: 8,
+    flexDirection: "row",
     gap: 12,
   },
   block: {
@@ -298,7 +369,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: "center",
   },
-  amountText: { color: Colors.white, fontWeight: "bold", fontSize: 15 },
+  amountText: {
+    color: Colors.white,
+    fontWeight: "bold",
+    fontSize: 15,
+  },
   bottomInfo: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -343,7 +418,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   categoryLabel: {
-    color:"#000",
+    color: "#000",
     fontSize: 11,
     marginTop: 3,
     textAlign: "center",

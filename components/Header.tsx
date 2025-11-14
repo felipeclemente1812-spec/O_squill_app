@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 2,
     borderBottomColor: Colors.brown,
-    paddingTop: 10,
-    paddingBottom: 8,
+    paddingTop: 5, // Reduzido de 10 para 5
+    paddingBottom: 4, // Reduzido de 8 para 4
     paddingHorizontal: 15,
   },
   topRow: {
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     color: "#444",
     fontSize: 14,
     fontWeight: "600",
-    marginTop: 4,
+    marginTop: 2, // Reduzido de 4 para 2
     textAlign: "center",
   },
   sideButton: {

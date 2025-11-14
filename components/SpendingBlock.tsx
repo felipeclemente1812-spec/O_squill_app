@@ -229,7 +229,7 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
           borderRadius: 10,
         }}
       >
-        <Text style={{ color: '#000', fontSize: 14, fontWeight:'700' }}>
+        <Text style={{ color:Colors.textSecondary, fontSize: 14, fontWeight:'700' }}>
           {m.label.split(" ")[0]}
         </Text>
       </TouchableOpacity>
