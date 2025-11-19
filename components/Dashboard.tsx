@@ -52,7 +52,7 @@ const categoryColors: Record<string, string> = {
   salario: Colors.salario,
   presente: Colors.presente,
   bonus: Colors.bonus,
-  tvIncome: Colors.tvIncome,
+  other: Colors.tvIncome,
 };
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -120,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       const grouped: Record<string, { value: number; name: string }> = {};
       filteredData.forEach((item) => {
-        const category = item.category || "quest";
+        const category = item.category || "other";
         if (!grouped[category]) grouped[category] = { value: 0, name: item.category };
         grouped[category].value += Number(item.amount);
       });
@@ -269,37 +269,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           <Text style={styles.modalButtonText}>Última Semana</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.modalTitle, { marginTop: 10 }]}>Tipo de dado</Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity
-            style={[
-              styles.modalButton,
-              {
-                backgroundColor:
-                  dataType === "expense" ? Colors.tintcolor : Colors.grey,
-                width: "45%",
-              },
-            ]}
-            onPress={() => setDataType("expense")}
-          >
-            <Text style={styles.modalButtonText}>Gasto</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.modalButton,
-              {
-                backgroundColor:
-                  dataType === "income" ? Colors.tintcolor : Colors.grey,
-                width: "45%",
-              },
-            ]}
-            onPress={() => setDataType("income")}
-          >
-            <Text style={styles.modalButtonText}>Receita</Text>
-          </TouchableOpacity>
-        </View>
-
         <TouchableOpacity
           style={[styles.modalButton, { backgroundColor: Colors.lightBrown, marginTop: 10 }]}
           onPress={() => setModalVisible(false)}
@@ -319,9 +288,9 @@ export default Dashboard;
 const styles = StyleSheet.create({
   container: {
   flex: 1,
-  width: "100%",            // garante espaço total da linha
+  width: "100%",
   justifyContent: "center",
-  alignItems: "flex-end",   // pode manter isso, mas agora com flex correto
+  alignItems: "flex-end",
   paddingRight: 10,
 },
 chartWrapper: {

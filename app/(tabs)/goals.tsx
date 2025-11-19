@@ -2,9 +2,10 @@ import Colors from "@/constants/Colors";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -56,17 +57,77 @@ const GoalsScreen = () => {
 
   const [modos, setModos] = useState<{ [id: string]: "mes" | "dia" }>({});
 
+  // -----------------------
+  // Animated values ref (1 hook only)
+  // -----------------------
+  const animatedWidthsRef = useRef<{
+    [id: string]: Animated.Value | undefined;
+  }>({});
+
+  // Ref para animação de pop-in das metas
+  const animatedScaleRef = useRef<{ [id: string]: Animated.Value }>({});
+
+  // Ref para rastrear metas que já existiam antes
+  const existingGoalsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    const loadGoals = async () => {
-      try {
-        const data = await AsyncStorage.getItem(STORAGE_KEY);
-        if (data) setGoals(JSON.parse(data));
-      } catch (error) {
-        console.error("Erro ao carregar metas:", error);
+    // No lugar do useEffect de animação de pop-in:
+goals.forEach((goal) => {
+  if (!animatedScaleRef.current[goal.id]) {
+    animatedScaleRef.current[goal.id] = new Animated.Value(0); // inicializa em 0
+
+    Animated.spring(animatedScaleRef.current[goal.id], {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 6,
+      tension: 50,
+    }).start();
+  }
+});
+
+
+      // Dentro do useEffect que anima metas novas
+      if (!existingGoalsRef.current.has(goal.id)) {
+        animatedScaleRef.current[goal.id] = new Animated.Value(0);
+
+        Animated.spring(animatedScaleRef.current[goal.id], {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 6,
+          tension: 50,
+        }).start();
+
+        existingGoalsRef.current.add(goal.id);
       }
-    };
-    loadGoals();
-  }, []);
+    });
+  }, [goals]);
+
+  // Ensure there's an Animated.Value for each goal, and animate to current progress whenever goals change
+  useEffect(() => {
+    // initialize missing Animated.Values
+    goals.forEach((goal) => {
+      if (!animatedWidthsRef.current[goal.id]) {
+        // start from 0 so new goals animate from 0 to progress; existing ones will animate too on first run
+        animatedWidthsRef.current[goal.id] = new Animated.Value(0);
+      }
+    });
+
+    // animate each value to its progress
+    goals.forEach((goal) => {
+      const progress = Math.min(
+        (goal.currentValue / goal.targetValue) * 100,
+        100
+      );
+      const animated = animatedWidthsRef.current[goal.id];
+      if (animated) {
+        Animated.timing(animated, {
+          toValue: progress,
+          duration: 600,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+  }, [goals]);
 
   const saveGoals = async (newGoals: Goal[]) => {
     try {
@@ -122,18 +183,10 @@ const GoalsScreen = () => {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert("Confirmar exclusão", "Deseja realmente excluir esta meta?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: () => {
-          const filtered = goals.filter((g) => g.id !== id);
-          saveGoals(filtered);
-          closeModal();
-        },
-      },
-    ]);
+    const filtered = goals.filter((g) => g.id !== id);
+    saveGoals(filtered);
+    setModalVisible(false);
+    setEditingGoal(null);
   };
 
   const openAddModal = () => {
@@ -174,31 +227,30 @@ const GoalsScreen = () => {
   };
 
   const getTimeRemaining = (targetDate: string) => {
-  const [dd, mm, yy] = targetDate.split("/").map(Number);
-  const formattedYear = yy < 100 ? 2000 + yy : yy;
-  const target = new Date(formattedYear, mm - 1, dd);
-  const now = new Date();
-  const diff = target.getTime() - now.getTime();
+    const [dd, mm, yy] = targetDate.split("/").map(Number);
+    const formattedYear = yy < 100 ? 2000 + yy : yy;
+    const target = new Date(formattedYear, mm - 1, dd);
+    const now = new Date();
+    const diff = target.getTime() - now.getTime();
 
-  if (diff <= 0) return "Encerrada";
+    if (diff <= 0) return "Encerrada";
 
-  const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const years = Math.floor(totalDays / 365);
-  const months = Math.floor((totalDays % 365) / 30);
-  const days = totalDays - years * 365 - months * 30;
+    const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const years = Math.floor(totalDays / 365);
+    const months = Math.floor((totalDays % 365) / 30);
+    const days = totalDays - years * 365 - months * 30;
 
-  const parts = [];
-  if (years > 0) parts.push(`${years} ano${years > 1 ? "s" : ""}`);
-  if (months > 0) parts.push(`${months} mês${months > 1 ? "es" : ""}`);
-  if (days > 0) parts.push(`${days} dia${days > 1 ? "s" : ""}`);
+    const parts: string[] = [];
+    if (years > 0) parts.push(`${years} ano${years > 1 ? "s" : ""}`);
+    if (months > 0) parts.push(`${months} mês${months > 1 ? "es" : ""}`);
+    if (days > 0) parts.push(`${days} dia${days > 1 ? "s" : ""}`);
 
-  // junta com "e" entre os dois últimos valores
-  if (parts.length > 1) {
-    const last = parts.pop();
-    return `${parts.join(", ")} e ${last}`;
-  }
-  return parts[0] || "0 dias";
-};
+    if (parts.length > 1) {
+      const last = parts.pop();
+      return `${parts.join(", ")} e ${last}`;
+    }
+    return parts[0] || "0 dias";
+  };
 
   return (
     <>
@@ -236,7 +288,10 @@ const GoalsScreen = () => {
                 1
               );
               const diffMonths = Math.max(diffDays / 30, 1);
-              const faltando = Math.max(goal.targetValue - goal.currentValue, 0);
+              const faltando = Math.max(
+                goal.targetValue - goal.currentValue,
+                0
+              );
 
               const modo = modos[goal.id] || "mes";
               const valorPorTempo =
@@ -248,10 +303,37 @@ const GoalsScreen = () => {
                   [goal.id]: prev[goal.id] === "mes" ? "dia" : "mes",
                 }));
 
+              // Use the animated value from the ref (fallback to a temporary one if not ready)
+              const animated = animatedWidthsRef.current[goal.id];
+              const safeAnimated = animated ?? new Animated.Value(0);
+
+              const widthInterpolated = safeAnimated.interpolate({
+                inputRange: [0, 100],
+                outputRange: ["0%", "100%"],
+              });
+
+              const scale =
+                animatedScaleRef.current[goal.id] ?? new Animated.Value(1);
+              const opacity = scale.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1],
+              });
+              const translateY = scale.interpolate({
+                inputRange: [0, 1],
+                outputRange: [20, 0], // começa 20px abaixo e sobe
+              });
+
               return (
-                <View
+                <Animated.View
                   key={goal.id}
-                  style={[styles.goalBox, { backgroundColor: goal.color }]}
+                  style={[
+                    styles.goalBox,
+                    {
+                      backgroundColor: goal.color,
+                      transform: [{ scale }, { translateY }],
+                      opacity,
+                    },
+                  ]}
                 >
                   <View style={styles.goalHeader}>
                     <Text style={styles.goalTitle}>{goal.name}</Text>
@@ -320,8 +402,11 @@ const GoalsScreen = () => {
                   )}
 
                   <View style={styles.progressBar}>
-                    <View
-                      style={[styles.progressFill, { width: `${progress}%` }]}
+                    <Animated.View
+                      style={[
+                        styles.progressFill,
+                        { width: widthInterpolated },
+                      ]}
                     />
                   </View>
 
@@ -333,7 +418,7 @@ const GoalsScreen = () => {
                       R${goal.targetValue.toFixed(2)}
                     </Text>
                   </View>
-                </View>
+                </Animated.View>
               );
             })}
           </ScrollView>
@@ -498,9 +583,28 @@ const styles = StyleSheet.create({
     color: Colors.brown,
     marginVertical: 10,
   },
-  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { color: Colors.text, fontSize: 18, fontWeight: "700" },
-  emptySubText: { color: Colors.textSecondary, fontSize: 28, marginTop: 4, fontWeight:'700' },
+  emptyContainer: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 40,
+  },
+  emptyText: {
+    color: Colors.text,
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  emptySubText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+    marginTop: 8,
+    fontWeight: "600",
+    textAlign: "center",
+    maxWidth: "80%",
+  },
   goalBox: {
     borderRadius: 12,
     paddingVertical: 8,

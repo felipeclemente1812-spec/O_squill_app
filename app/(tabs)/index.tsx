@@ -164,12 +164,20 @@ const Page = () => {
               {showExpenses ? (
                 <>
                   <ExpenseBlock onChange={(data) => setExpenses(data)} />
-                  <SpendingBlock storageKey="@expenses" title="Despesas" />
+                  <SpendingBlock
+                    key="expenses"
+                    storageKey="@expenses"
+                    title="Despesas"
+                  />
                 </>
               ) : (
                 <>
                   <IncomeBlock onChange={(data) => setIncomes(data)} />
-                  <SpendingBlock storageKey="@income" title="Receitas" />
+                  <SpendingBlock
+                    key="incomes"
+                    storageKey="@incomes"
+                    title="Receitas"
+                  />
                 </>
               )}
             </View>

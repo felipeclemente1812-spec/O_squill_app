@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 
 import {
@@ -42,9 +43,32 @@ interface SpendingBlockProps {
   title: string;
 }
 
-// 🔹 Define ícones e cores de cada categoria
+/* -------------------------------------------------------------------------- */
+/* 🔹 COMPONENTE DE ANIMAÇÃO — AGORA FORA DO MAP                             */
+/* -------------------------------------------------------------------------- */
+
+const AnimatedPopIn = ({ children }: any) => {
+  const scaleAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 5,
+      tension: 40,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      {children}
+    </Animated.View>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+
 const allCategories = {
-  // despesas
   house: { icon: Icons.house, color: Colors.house },
   car: { icon: Icons.car, color: Colors.car },
   fone: { icon: Icons.fone, color: Colors.fone },
@@ -58,14 +82,12 @@ const allCategories = {
   tv: { icon: Icons.tv, color: Colors.tv },
   quest: { icon: Icons.quest, color: Colors.quest },
 
-  // receitas
   salario: { icon: Icons.salario, color: Colors.salario },
   presente: { icon: Icons.presente, color: Colors.presente },
   bonus: { icon: Icons.bonus, color: Colors.bonus },
-  other: { icon: Icons.quest, color: Colors.tvIncome }, // fallback
+  other: { icon: Icons.quest, color: Colors.tvIncome },
 };
 
-// ✅ Mapeia ícones e cores para acesso rápido
 const categoryIcons: Record<string, any> = {};
 const categoryColors: Record<string, string> = {};
 
@@ -74,7 +96,6 @@ Object.entries(allCategories).forEach(([key, { icon, color }]) => {
   categoryColors[key] = color;
 });
 
-// 🔹 Gera os últimos 3 meses
 const getLastThreeMonths = () => {
   const months: { month: number; year: number; label: string }[] = [];
   const now = new Date();
@@ -102,7 +123,6 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
   const [selectedCategory, setSelectedCategory] =
     React.useState<string>("quest");
 
-  // 🔹 Carrega dados periodicamente
   React.useEffect(() => {
     const loadData = async () => {
       const data = await AsyncStorage.getItem(storageKey);
@@ -113,7 +133,6 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
     return () => clearInterval(interval);
   }, [storageKey]);
 
-  // 🔹 Abre o modal de edição/criação
   const openEditModal = (item: ItemType | null = null) => {
     if (item) {
       setEditingItem(item);
@@ -131,7 +150,6 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
     setModalVisible(true);
   };
 
-  // 🔹 Salva item
   const handleSave = async () => {
     if (!newName || !newAmount || !newDate) return;
     let updated: ItemType[] = [];
@@ -164,7 +182,6 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
     setModalVisible(false);
   };
 
-  // 🔹 Exclui item
   const deleteItem = async (id: string) => {
     const filtered = items.filter((e) => e.id !== id);
     setItems(filtered);
@@ -173,7 +190,6 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
     setEditingItem(null);
   };
 
-  // 🔹 Filtra por mês
   const filteredItems = React.useMemo(() => {
     return items
       .filter((exp) => {
@@ -186,16 +202,8 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
       .sort((a, b) => {
         const [dayA, monthA, yearA] = a.date.split("/").map(Number);
         const [dayB, monthB, yearB] = b.date.split("/").map(Number);
-        const dateA = new Date(
-          2000 + (yearA < 100 ? yearA : yearA),
-          monthA - 1,
-          dayA
-        );
-        const dateB = new Date(
-          2000 + (yearB < 100 ? yearB : yearB),
-          monthB - 1,
-          dayB
-        );
+        const dateA = new Date(2000 + yearA, monthA - 1, dayA);
+        const dateB = new Date(2000 + yearB, monthB - 1, dayB);
         return dateB.getTime() - dateA.getTime();
       });
   }, [items, selectedMonth]);
@@ -208,40 +216,65 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
   return (
     <View style={styles.container}>
       <View style={{ flex: 1 }}>
-       {/* 🔹 Cabeçalho + Total */}
-{/* Título */}
-<Text style={{ color: Colors.text, fontSize: 20, fontWeight: "500", marginBottom: 8 }}>
-  {title} de {selectedMonth.label}
-</Text>
-
-{/* Linha meses + total */}
-<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 }}>
-  {/* Meses */}
-  <View style={{ flexDirection: "row", gap: 5 }}>
-    {months.map((m) => (
-      <TouchableOpacity
-        key={m.label}
-        onPress={() => setSelectedMonth(m)}
-        style={{
-          backgroundColor: m.label === selectedMonth.label ? Colors.tintcolor : Colors.grey,
-          paddingHorizontal: 12,
-          paddingVertical: 6,
-          borderRadius: 10,
-        }}
-      >
-        <Text style={{ color:Colors.textSecondary, fontSize: 14, fontWeight:'700' }}>
-          {m.label.split(" ")[0]}
+        <Text
+          style={{
+            color: Colors.text,
+            fontSize: 20,
+            fontWeight: "500",
+            marginBottom: 8,
+          }}
+        >
+          {title} de {selectedMonth.label}
         </Text>
-      </TouchableOpacity>
-    ))}
-  </View>
 
-  {/* Total */}
-  <Text style={{ color: Colors.text, fontSize: 22, fontWeight: "800" }}>
-    Total: R$ {totalMonth.toFixed(2)}
-  </Text>
-</View>
-        {/* 🔹 Blocos */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 15,
+          }}
+        >
+          <View style={{ flexDirection: "row", gap: 5 }}>
+            {months.map((m) => (
+              <TouchableOpacity
+                key={m.label}
+                onPress={() => setSelectedMonth(m)}
+                style={{
+                  backgroundColor:
+                    m.label === selectedMonth.label
+                      ? Colors.tintcolor
+                      : Colors.grey,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: Colors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: "700",
+                  }}
+                >
+                  {m.label.split(" ")[0]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text
+            style={{
+              color: Colors.text,
+              fontSize: 22,
+              fontWeight: "800",
+              marginLeft: 15,
+            }}
+          >
+            Total: R$ {totalMonth.toFixed(2)}
+          </Text>
+        </View>
+
         <ScrollView showsVerticalScrollIndicator={false}>
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => {
@@ -258,48 +291,59 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
               const percentage =
                 totalMonth > 0
                   ? (
-                      (parseFloat(item.amount.replace(",", ".")) / totalMonth) *
+                      (parseFloat(item.amount.replace(",", ".")) /
+                        totalMonth) *
                       100
                     ).toFixed(0) + "%"
                   : "0%";
 
               return (
-                <View
-                  key={item.id}
-                  style={[styles.block, { backgroundColor: color }]}
-                >
-                  <View style={styles.blockLeft}>
-                    <View style={styles.iconCircle}>{RenderIcon}</View>
-                  </View>
-                  <View style={styles.blockContent}>
-                    <View style={styles.blockHeader}>
-                      <Text style={styles.dateText}>{item.date}</Text>
-                      <TouchableOpacity onPress={() => openEditModal(item)}>
-                        <Feather
-                          name="more-vertical"
-                          size={20}
-                          color={Colors.white}
-                        />
-                      </TouchableOpacity>
+                <AnimatedPopIn key={item.id}>
+                  <View style={[styles.block, { backgroundColor: color }]}>
+                    <View style={styles.blockLeft}>
+                      <View style={styles.iconCircle}>{RenderIcon}</View>
                     </View>
-                    <Text style={styles.nameText}>{item.name}</Text>
-                    <Text style={styles.categoryText}>{item.category}</Text>
-                    <View style={styles.bottomInfo}>
-                      <Text style={styles.amountText}>R$ {item.amount}</Text>
-                      <Text style={styles.percentText}>{percentage}</Text>
+
+                    <View style={styles.blockContent}>
+                      <View style={styles.blockHeader}>
+                        <Text style={styles.dateText}>{item.date}</Text>
+                        <TouchableOpacity onPress={() => openEditModal(item)}>
+                          <Feather
+                            name="more-vertical"
+                            size={20}
+                            color={Colors.white}
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      <Text style={styles.nameText}>{item.name}</Text>
+                      <Text style={styles.categoryText}>
+                        {item.category}
+                      </Text>
+
+                      <View style={styles.bottomInfo}>
+                        <Text style={styles.amountText}>
+                          R$ {item.amount}
+                        </Text>
+                        <Text style={styles.percentText}>
+                          {percentage}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
+                </AnimatedPopIn>
               );
             })
           ) : (
-            <Text style={{ color: Colors.white, opacity: 0.7 }}>
+            <Text
+              style={{ color: Colors.textSecondary, fontWeight: "800" }}
+            >
               Nenhum registro neste mês
             </Text>
           )}
         </ScrollView>
 
-        {/* 🔹 Modal */}
+        {/* Modal */}
         <Modal
           visible={modalVisible}
           transparent
@@ -309,7 +353,11 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text
-                style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}
+                style={{
+                  color: Colors.white,
+                  fontSize: 16,
+                  marginBottom: 10,
+                }}
               >
                 {editingItem ? "Editar" : "Adicionar"}{" "}
                 {title.toLowerCase().slice(0, -1)}
@@ -342,7 +390,8 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
                   let formatted = "";
                   if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
                   if (cleaned.length >= 3)
-                    formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
+                    formatted =
+                      cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
                   if (cleaned.length >= 5)
                     formatted += "/" + cleaned.slice(4, 6);
                   setNewDate(formatted);
@@ -392,8 +441,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 20,
     marginTop: 25,
-    paddingVertical: 0, // menor e efetivo
-    marginVertical: 0, // reduz espaço externo
+    paddingVertical: 0,
+    marginVertical: 0,
     shadowColor: Colors.darkBrown,
     shadowOffset: { width: 0, height: 2 },
     borderWidth: 3,

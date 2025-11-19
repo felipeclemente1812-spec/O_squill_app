@@ -11,7 +11,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Dimensions
+  Dimensions,
+  Animated
 } from "react-native";
 import React from "react";
 import Colors from "@/constants/Colors";
@@ -47,7 +48,56 @@ const categories = [
 const getCategory = (category: string) =>
   categories.find((c) => c.key === category) || categories[categories.length - 1];
 
-const STORAGE_KEY = "@income";
+const STORAGE_KEY = "@incomes";
+
+/* -------------------- COMPONENTE COM ANIMAÇÃO POP (INCOME) -------------------- */
+const AnimatedIncomeBlock = ({ item, openEditModal }: any) => {
+  const scaleAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 4,
+      tension: 50,
+    }).start();
+  }, []);
+
+  const category = getCategory(item.category);
+  const IconComp = category.icon;
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ scale: scaleAnim }],
+      }}
+    >
+      <Pressable
+        key={item.id}
+        style={[styles.block, { backgroundColor: category.color }]}
+      >
+        <View style={styles.blockHeader}>
+          <Text style={styles.dateText}>{item.date}</Text>
+
+          <Pressable onPress={() => openEditModal(item)}>
+            <Feather name="more-vertical" size={18} color={Colors.white} />
+          </Pressable>
+        </View>
+
+        <View style={styles.iconContainer}>
+          <IconComp width={26} height={26} color={"#000"} />
+        </View>
+
+        <Text style={styles.nameText}>{item.name}</Text>
+        <Text style={styles.categoryText}>{category.label}</Text>
+
+        <View style={styles.bottomInfo}>
+          <Text style={styles.amountText}>R$ {item.amount}</Text>
+        </View>
+      </Pressable>
+    </Animated.View>
+  );
+};
 
 const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
   const [income, setIncome] = React.useState<IncomeType[]>([]);
@@ -168,41 +218,16 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
         >
-          {income.map((item) => {
-            const category = getCategory(item.category);
-            const IconComp = category.icon;
-            return (
-              <Pressable
-                key={item.id}
-                style={[styles.block, { backgroundColor: category.color }]}
-                onPressIn={() => {}} // mantém feedback mas não abre modal
-              >
-                <View style={styles.blockHeader}>
-                  <Text style={styles.dateText}>{item.date}</Text>
-
-                  {/* Botão que ABRE modal */}
-                  <Pressable onPress={() => openEditModal(item)}>
-                    <Feather name="more-vertical" size={18} color={Colors.white} />
-                  </Pressable>
-                </View>
-
-                <View style={styles.iconContainer}>
-                  <IconComp width={26} height={26} color={"#000"} />
-                </View>
-
-                <Text style={styles.nameText}>{item.name}</Text>
-                <Text style={styles.categoryText}>{category.label}</Text>
-
-                <View style={styles.bottomInfo}>
-                  <Text style={styles.amountText}>R$ {item.amount}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
+          {income.map((item) => (
+            <AnimatedIncomeBlock
+              key={item.id}
+              item={item}
+              openEditModal={openEditModal}
+            />
+          ))}
         </ScrollView>
       </View>
 
-      {/* Modal */}
       <Modal
         visible={modalVisible}
         transparent
@@ -313,7 +338,6 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
 
 export default IncomeBlock;
 
-// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     width: "100%",

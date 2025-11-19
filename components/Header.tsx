@@ -35,7 +35,10 @@ const Header = () => {
 
         <Text style={styles.title}>SQUILL</Text>
 
-        <TouchableOpacity onPress={resetarTudo} style={[styles.sideButton, styles.resetBtn]}>
+        <TouchableOpacity
+          onPress={resetarTudo}
+          style={[styles.sideButton, styles.resetBtn]}
+        >
           <Text style={[styles.btnText, { color: "#ff6b6b" }]}>Resetar</Text>
         </TouchableOpacity>
       </View>
@@ -66,13 +69,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    fontWeight: "900",
     color: Colors.brown,
     letterSpacing: 2,
     textAlign: "center",
-    alignItems:'center',
-    fontFamily: "serif", // troque por "serif" se quiser mais parecido com a imagem
+    alignItems: "center",
+    fontWeight: "bold",
   },
+
   welcomeText: {
     color: "#444",
     fontSize: 14,
