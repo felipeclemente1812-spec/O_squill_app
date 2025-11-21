@@ -3,7 +3,6 @@ import {
   AntDesign,
   FontAwesome,
   FontAwesome5,
-  SimpleLineIcons,
 } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -58,7 +57,7 @@ const Layout = () => {
                     alignItems: "center",
                   }}
                 >
-                  <SimpleLineIcons name="pie-chart" size={22} color={color} />
+                  <FontAwesome5 name="chart-pie" size={22} color={color} />
                 </View>
               ),
             }}
@@ -83,7 +82,6 @@ const Layout = () => {
               ),
             }}
           />
-
           <Tabs.Screen
             name="mascot"
             options={{
@@ -98,12 +96,30 @@ const Layout = () => {
                     alignItems: "center",
                   }}
                 >
-                  <FontAwesome5 name="brush" size={22} color={color} />
+                  <FontAwesome5 name="pen" size={22} color={color} />
                 </View>
               ),
             }}
           />
-
+          <Tabs.Screen
+            name="InfoScreen"
+            options={{
+              tabBarIcon: ({ color, focused }) => (
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: focused ? Colors.tintcolor : Colors.grey,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <FontAwesome name="file-text" size={22} color={color} />
+                </View>
+              ),
+            }}
+          />
           <Tabs.Screen
             name="HistoryScreen"
             options={{
@@ -119,26 +135,6 @@ const Layout = () => {
                   }}
                 >
                   <FontAwesome5 name="book-open" size={22} color={color} />
-                </View>
-              ),
-            }}
-          />
-
-          <Tabs.Screen
-            name="profile"
-            options={{
-              tabBarIcon: ({ color, focused }) => (
-                <View
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    backgroundColor: focused ? Colors.tintcolor : Colors.grey,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <FontAwesome name="user-o" size={22} color={color} />
                 </View>
               ),
             }}

@@ -12,6 +12,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Dimensions,
 } from "react-native";
 import ExpenseBlock, { ExpenseType } from "@/components/ExpenseBlock";
 import IncomeBlock, { IncomeType } from "@/components/IncomeBlock";
@@ -24,6 +25,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const STORAGE_KEY_EXPENSES = "@expenses";
 const STORAGE_KEY_INCOMES = "@incomes";
+
+const { width } = Dimensions.get("window");
 
 const Page = () => {
   const [expenses, setExpenses] = useState<ExpenseType[]>([]);
@@ -78,7 +81,7 @@ const Page = () => {
   const totalValue = showExpenses ? totalExpense : totalIncome;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
       <Header />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -96,7 +99,6 @@ const Page = () => {
             <View style={styles.container}>
               {/* 🔹 Cabeçalho Total */}
               <View style={styles.headerSection}>
-                {/* 🔹 Bloco Total */}
                 <View style={styles.totalBlock}>
                   <View
                     style={{
@@ -105,14 +107,26 @@ const Page = () => {
                       marginTop: 3,
                     }}
                   >
-                    <Text style={styles.titleText}>
+                    <Text
+                      style={{ fontSize: width * 0.045, color: Colors.text }}
+                    >
                       Total de{" "}
-                      <Text style={styles.titleHighlight}>
+                      <Text
+                        style={{
+                          fontSize: width * 0.045,
+                          color: Colors.brown,
+                          fontWeight: "700",
+                        }}
+                      >
                         {showExpenses ? "Despesas" : "Receitas"}
                       </Text>
                       {"\n"}
                       <Text
-                        style={[styles.subtitleText, { fontWeight: "700" }]}
+                        style={{
+                          fontSize: width * 0.03,
+                          color: Colors.textSecondary,
+                          fontWeight: "700",
+                        }}
                       >
                         (últimos 7 dias)
                       </Text>
@@ -127,25 +141,28 @@ const Page = () => {
                       }}
                     >
                       <Ionicons
-                        name={
-                          showExpenses
-                            ? "arrow-down-circle-outline"
-                            : "arrow-up-circle-outline"
-                        }
+                        name="swap-vertical-outline" // ícone fixo
                         size={22}
                         color={Colors.brown}
                       />
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.totalValue}>
+                  <Text
+                    style={{
+                      fontSize: width * 0.07,
+                      color: Colors.darkBrown,
+                      fontWeight: "700",
+                      marginTop: 4,
+                    }}
+                  >
                     R${totalValue.toFixed(2)}
                   </Text>
                 </View>
 
                 {/* 🔹 Gráfico */}
                 <View style={styles.dashboardWrapper}>
-                  <View style={[styles.dashboardWrapper, { flex: 1 }]}>
+                  <View style={styles.dashboardWrapper}>
                     <Dashboard
                       expenses={expenses}
                       incomes={incomes}
@@ -209,8 +226,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: Colors.lightBackground,
     borderRadius: 16,
-    paddingHorizontal: 40,
-    paddingVertical: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     marginTop: 20,
     marginBottom: 20,
     shadowColor: Colors.darkBrown,
@@ -219,16 +236,15 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 3,
     borderColor: Colors.brown,
-    borderStyle: "solid",
   },
   totalBlock: {
+    flex: 3, // mais espaço para o texto
     justifyContent: "center",
   },
   dashboardWrapper: {
-    flex: 1, // ocupa todo o espaço disponível horizontalmente
-    justifyContent: "center", // centraliza verticalmente se quiser
-    alignItems: "flex-end", // para que fique à direita
-    marginRight: 10, // margem da borda direita
+    flex: 2, // proporcional ao texto
+    justifyContent: "center",
+    alignItems: "center",
   },
   titleText: {
     color: Colors.text,

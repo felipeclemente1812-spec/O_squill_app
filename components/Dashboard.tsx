@@ -121,18 +121,23 @@ const Dashboard: React.FC<DashboardProps> = ({
       const grouped: Record<string, { value: number; name: string }> = {};
       filteredData.forEach((item) => {
         const category = item.category || "other";
-        if (!grouped[category]) grouped[category] = { value: 0, name: item.category };
+        if (!grouped[category])
+          grouped[category] = { value: 0, name: item.category };
         grouped[category].value += Number(item.amount);
       });
 
-      const totalValue = Object.values(grouped).reduce((acc, val) => acc + val.value, 0);
+      const totalValue = Object.values(grouped).reduce(
+        (acc, val) => acc + val.value,
+        0
+      );
 
       const chartData: PieSlice[] = Object.keys(grouped).map((category) => ({
         id: category,
         value: grouped[category].value,
         color: categoryColors[category] || Colors.grey,
         text: grouped[category].name,
-        percentage: totalValue > 0 ? (grouped[category].value / totalValue) * 100 : 0,
+        percentage:
+          totalValue > 0 ? (grouped[category].value / totalValue) * 100 : 0,
         sliceThickness: selectedSlice === category ? 35 : 20,
       }));
 
@@ -144,141 +149,176 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <View style={styles.container}>
-{/* Gráfico alinhado à direita e menor */}
-<View style={styles.chartWrapper}>
-  <View style={styles.chartContainer}>
-    <PieChart
-      data={
-        pieData.length > 0
-          ? pieData
-          : [{ id: "empty", value: 1, color: "transparent", text: "", percentage: 100 }]
-      }
-      donut
-      showGradient
-      sectionAutoFocus={false} // desativa foco automático do gifted-charts
-      radius={width * 0.15}     // menor raio
-      innerRadius={width * 0.09} // buraco proporcional
-      innerCircleColor={Colors.background}
-      centerLabelComponent={() => {
-        if (!selectedSlice) {
-          return (
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ fontSize: 16, color: Colors.darkBrown, fontWeight: "bold" }}>
-                {selectedPeriod === 0
-                  ? "Semana"
-                  : getLastThreeMonths()[selectedPeriod - 1].name}
-              </Text>
-              <Text style={{ fontSize: 12, color: Colors.textSecondary }}>Resumo</Text>
-            </View>
-          );
-        }
+      {/* Gráfico alinhado à direita e menor */}
+      <View style={styles.chartWrapper}>
+        <View style={styles.chartContainer}>
+          <PieChart
+            data={
+              pieData.length > 0
+                ? pieData
+                : [
+                    {
+                      id: "empty",
+                      value: 1,
+                      color: "transparent",
+                      text: "",
+                      percentage: 100,
+                    },
+                  ]
+            }
+            donut
+            showGradient
+            sectionAutoFocus={false} // desativa foco automático do gifted-charts
+            radius={width * 0.20} // 25% da largura da tela
+            innerRadius={width * 0.11} // 15% da largura
+            innerCircleColor={Colors.background}
+            centerLabelComponent={() => {
+              if (!selectedSlice) {
+                return (
+                  <View
+                    style={{ justifyContent: "center", alignItems: "center" }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: Colors.darkBrown,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {selectedPeriod === 0
+                        ? "Semana"
+                        : getLastThreeMonths()[selectedPeriod - 1].name}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: Colors.textSecondary }}>
+                      Resumo
+                    </Text>
+                  </View>
+                );
+              }
 
-        const slice = pieData.find((p) => p.id === selectedSlice);
-        if (!slice) return null;
+              const slice = pieData.find((p) => p.id === selectedSlice);
+              if (!slice) return null;
 
-        return (
-          <View style={{ justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: Colors.darkBrown, fontSize: 14, fontWeight: "700" }}>
-              {slice.text}
-            </Text>
-            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
-              R${slice.value.toFixed(2)}
-            </Text>
-            <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
-              {slice.percentage.toFixed(0)}%
-            </Text>
-          </View>
-        );
-      }}
-      onPress={(slice: PieSlice) => {
-        // Mantém o destaque até clicar em outro slice
-        if (slice.id !== "empty" && slice.id !== selectedSlice) {
-          onSelectSlice(slice.id);
-        }
-      }}
-    />
-
-    {/* Botão fixo no canto superior esquerdo do gráfico */}
-    <View style={styles.chartButtonWrapper}>
-      <TouchableOpacity onPress={() => setModalVisible(true)}>
-        <Ionicons
-          name={dataType === "expense" ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
-          size={30}
-          color={Colors.darkBrown}
-        />
-      </TouchableOpacity>
-    </View>
-  </View>
-</View>
-
-{/* Modal */}
-<Modal
-  visible={modalVisible}
-  transparent
-  animationType="fade"
-  onRequestClose={() => setModalVisible(false)}
->
-  <KeyboardAvoidingView
-    style={styles.modalOverlay}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-  >
-    <TouchableOpacity
-      style={StyleSheet.absoluteFill}
-      activeOpacity={1}
-      onPress={() => setModalVisible(false)}
-    />
-    <View style={styles.modalPanel}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
-      >
-        <Text style={styles.modalTitle}>Selecionar Período</Text>
-
-        {getLastThreeMonths().map((m, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.modalButton,
-              {
-                backgroundColor:
-                  selectedPeriod === index + 1 ? Colors.tintcolor : Colors.grey,
-              },
-            ]}
-            onPress={() => {
-              setSelectedPeriod(index + 1);
-              setModalVisible(false);
+              return (
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <Text
+                    style={{
+                      color: Colors.darkBrown,
+                      fontSize: 14,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {slice.text}
+                  </Text>
+                  <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
+                    R${slice.value.toFixed(2)}
+                  </Text>
+                  <Text style={{ color: Colors.textSecondary, fontSize: 14 }}>
+                    {slice.percentage.toFixed(0)}%
+                  </Text>
+                </View>
+              );
             }}
-          >
-            <Text style={styles.modalButtonText}>{m.name}</Text>
-          </TouchableOpacity>
-        ))}
+            onPress={(slice: PieSlice) => {
+              // Mantém o destaque até clicar em outro slice
+              if (slice.id !== "empty" && slice.id !== selectedSlice) {
+                onSelectSlice(slice.id);
+              }
+            }}
+          />
 
-        <TouchableOpacity
-          style={[
-            styles.modalButton,
-            {
-              backgroundColor:
-                selectedPeriod === 0 ? Colors.tintcolor : Colors.grey,
-            },
-          ]}
-          onPress={() => {
-            setSelectedPeriod(0);
-            setModalVisible(false);
-          }}
-        >
-          <Text style={styles.modalButtonText}>Última Semana</Text>
-        </TouchableOpacity>
+          {/* Botão fixo no canto superior esquerdo do gráfico */}
+          <View style={styles.chartButtonWrapper}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Ionicons
+                name={
+                  dataType === "expense"
+                    ? "arrow-down-circle-outline"
+                    : "arrow-up-circle-outline"
+                }
+                size={30}
+                color={Colors.darkBrown}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
 
-        <TouchableOpacity
-          style={[styles.modalButton, { backgroundColor: Colors.lightBrown, marginTop: 10 }]}
-          onPress={() => setModalVisible(false)}
+      {/* Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <Text style={styles.modalButtonText}>Fechar</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
-  </KeyboardAvoidingView>
-</Modal>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
+          <View style={styles.modalPanel}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 30 }}
+            >
+              <Text style={styles.modalTitle}>Selecionar Período</Text>
+
+              {getLastThreeMonths().map((m, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.modalButton,
+                    {
+                      backgroundColor:
+                        selectedPeriod === index + 1
+                          ? Colors.tintcolor
+                          : Colors.grey,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedPeriod(index + 1);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>{m.name}</Text>
+                </TouchableOpacity>
+              ))}
+
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  {
+                    backgroundColor:
+                      selectedPeriod === 0 ? Colors.tintcolor : Colors.grey,
+                  },
+                ]}
+                onPress={() => {
+                  setSelectedPeriod(0);
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Última Semana</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  { backgroundColor: Colors.lightBrown, marginTop: 10 },
+                ]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 };
@@ -287,18 +327,18 @@ export default Dashboard;
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  width: "100%",
-  justifyContent: "center",
-  alignItems: "flex-end",
-  paddingRight: 10,
-},
-chartWrapper: {
-  width: "100%",
-  justifyContent: "center",
-  alignItems: "center",
-  position: "relative", 
-},
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 10,
+  },
+  chartWrapper: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
   modalButtonContainer: {
     position: "absolute",
     top: 14,
@@ -306,11 +346,11 @@ chartWrapper: {
     zIndex: 10,
   },
   chartButtonWrapper: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  zIndex: 10,
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 10,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -338,9 +378,9 @@ chartWrapper: {
     marginVertical: 5,
   },
   chartContainer: {
-  justifyContent: "center",
-  alignItems: "center",
-},
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modalButtonText: {
     color: Colors.white,
     textAlign: "center",

@@ -64,29 +64,12 @@ const GoalsScreen = () => {
     [id: string]: Animated.Value | undefined;
   }>({});
 
-  // Ref para animação de pop-in das metas
   const animatedScaleRef = useRef<{ [id: string]: Animated.Value }>({});
-
-  // Ref para rastrear metas que já existiam antes
   const existingGoalsRef = useRef<Set<string>>(new Set());
 
+  // ---------- Animação pop-in ----------
   useEffect(() => {
-    // No lugar do useEffect de animação de pop-in:
-goals.forEach((goal) => {
-  if (!animatedScaleRef.current[goal.id]) {
-    animatedScaleRef.current[goal.id] = new Animated.Value(0); // inicializa em 0
-
-    Animated.spring(animatedScaleRef.current[goal.id], {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 6,
-      tension: 50,
-    }).start();
-  }
-});
-
-
-      // Dentro do useEffect que anima metas novas
+    goals.forEach((goal) => {
       if (!existingGoalsRef.current.has(goal.id)) {
         animatedScaleRef.current[goal.id] = new Animated.Value(0);
 
@@ -102,17 +85,14 @@ goals.forEach((goal) => {
     });
   }, [goals]);
 
-  // Ensure there's an Animated.Value for each goal, and animate to current progress whenever goals change
+  // Animação da barra de progresso
   useEffect(() => {
-    // initialize missing Animated.Values
     goals.forEach((goal) => {
       if (!animatedWidthsRef.current[goal.id]) {
-        // start from 0 so new goals animate from 0 to progress; existing ones will animate too on first run
         animatedWidthsRef.current[goal.id] = new Animated.Value(0);
       }
     });
 
-    // animate each value to its progress
     goals.forEach((goal) => {
       const progress = Math.min(
         (goal.currentValue / goal.targetValue) * 100,
@@ -252,6 +232,9 @@ goals.forEach((goal) => {
     return parts[0] || "0 dias";
   };
 
+  const ongoingGoals = goals.filter((g) => g.currentValue < g.targetValue);
+  const completedGoals = goals.filter((g) => g.currentValue >= g.targetValue);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -259,7 +242,7 @@ goals.forEach((goal) => {
       <View style={styles.container}>
         <Text style={styles.title}>METAS</Text>
 
-        {goals.length === 0 ? (
+        {ongoingGoals.length === 0 && completedGoals.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               Você ainda não tem metas cadastradas
@@ -270,13 +253,15 @@ goals.forEach((goal) => {
           </View>
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-            {goals.map((goal) => {
+            {/* ------------------- Metas em andamento ------------------- */}
+            {ongoingGoals.map((goal) => {
               const remaining = getTimeRemaining(goal.targetDate);
               const progress = Math.min(
                 (goal.currentValue / goal.targetValue) * 100,
                 100
               );
 
+              const modo = modos[goal.id] || "mes";
               const [dd, mm, yy] = goal.targetDate.split("/").map(Number);
               const formattedYear = yy < 100 ? 2000 + yy : yy;
               const target = new Date(formattedYear, mm - 1, dd);
@@ -292,8 +277,6 @@ goals.forEach((goal) => {
                 goal.targetValue - goal.currentValue,
                 0
               );
-
-              const modo = modos[goal.id] || "mes";
               const valorPorTempo =
                 modo === "mes" ? faltando / diffMonths : faltando / diffDays;
 
@@ -303,11 +286,9 @@ goals.forEach((goal) => {
                   [goal.id]: prev[goal.id] === "mes" ? "dia" : "mes",
                 }));
 
-              // Use the animated value from the ref (fallback to a temporary one if not ready)
-              const animated = animatedWidthsRef.current[goal.id];
-              const safeAnimated = animated ?? new Animated.Value(0);
-
-              const widthInterpolated = safeAnimated.interpolate({
+              const animated =
+                animatedWidthsRef.current[goal.id] ?? new Animated.Value(0);
+              const widthInterpolated = animated.interpolate({
                 inputRange: [0, 100],
                 outputRange: ["0%", "100%"],
               });
@@ -320,7 +301,7 @@ goals.forEach((goal) => {
               });
               const translateY = scale.interpolate({
                 inputRange: [0, 1],
-                outputRange: [20, 0], // começa 20px abaixo e sobe
+                outputRange: [20, 0],
               });
 
               return (
@@ -337,7 +318,6 @@ goals.forEach((goal) => {
                 >
                   <View style={styles.goalHeader}>
                     <Text style={styles.goalTitle}>{goal.name}</Text>
-
                     <View
                       style={{
                         flexDirection: "row",
@@ -354,7 +334,6 @@ goals.forEach((goal) => {
                       >
                         <Feather name="plus" size={18} color={Colors.white} />
                       </TouchableOpacity>
-
                       <TouchableOpacity onPress={() => openEditModal(goal)}>
                         <Feather
                           name="more-vertical"
@@ -421,6 +400,98 @@ goals.forEach((goal) => {
                 </Animated.View>
               );
             })}
+
+            {/* ------------------- Histórico ------------------- */}
+            {completedGoals.length > 0 && (
+              <>
+                <Text style={[styles.title, { marginTop: 20 }]}>HISTÓRICO</Text>
+                {completedGoals.map((goal) => {
+                  const animated =
+                    animatedWidthsRef.current[goal.id] ??
+                    new Animated.Value(100);
+                  const widthInterpolated = animated.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ["0%", "100%"],
+                  });
+
+                  const scale =
+                    animatedScaleRef.current[goal.id] ?? new Animated.Value(1);
+                  const opacity = scale.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  });
+                  const translateY = scale.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  });
+
+                  return (
+                    <Animated.View
+                      key={goal.id}
+                      style={[
+                        styles.goalBox,
+                        {
+                          backgroundColor: goal.color,
+                          transform: [{ scale }, { translateY }],
+                          opacity,
+                        },
+                      ]}
+                    >
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          alignSelf: "center",
+                          backgroundColor: "#ffd700",
+                          paddingHorizontal: 10,
+                          paddingVertical: 2,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <Text style={{ color: "#000", fontWeight: "bold" }}>
+                          META CONCLUÍDA
+                        </Text>
+                      </View>
+
+                      <View style={styles.goalHeader}>
+                        <Text style={styles.goalTitle}>{goal.name}</Text>
+                        <TouchableOpacity onPress={() => openEditModal(goal)}>
+                          <Feather
+                            name="more-vertical"
+                            size={20}
+                            color={Colors.white}
+                          />
+                        </TouchableOpacity>
+                      </View>
+
+                      {goal.description && (
+                        <Text style={[styles.goalDesc, { marginTop: 24 }]}>
+                          {goal.description}
+                        </Text>
+                      )}
+
+                      <View style={styles.progressBar}>
+                        <Animated.View
+                          style={[
+                            styles.progressFill,
+                            { width: widthInterpolated },
+                          ]}
+                        />
+                      </View>
+
+                      <View style={styles.progressTextRow}>
+                        <Text style={styles.progressValue}>
+                          R${goal.currentValue.toFixed(2)}
+                        </Text>
+                        <Text style={styles.progressValue}>
+                          R${goal.targetValue.toFixed(2)}
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  );
+                })}
+              </>
+            )}
           </ScrollView>
         )}
 
@@ -428,7 +499,7 @@ goals.forEach((goal) => {
           <Text style={styles.addButtonText}>INCLUIR META</Text>
         </TouchableOpacity>
 
-        {/* Modal de criação/edição */}
+        {/* ------------------- Modal de criação/edição ------------------- */}
         <Modal visible={modalVisible} transparent animationType="slide">
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.modalOverlay}>
@@ -530,40 +601,35 @@ goals.forEach((goal) => {
           </TouchableWithoutFeedback>
         </Modal>
 
-        {/* Modal adicionar valor */}
+        {/* ------------------- Modal de adicionar valor ------------------- */}
         <Modal visible={addValueModal} transparent animationType="fade">
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.modalOverlay}>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                style={{ width: "100%" }}
-              >
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Adicionar valor à meta</Text>
-                  <TextInput
-                    placeholder="Valor (R$)"
-                    placeholderTextColor="#555"
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={addAmount}
-                    onChangeText={setAddAmount}
-                  />
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={handleAddValue}
-                  >
-                    <Text style={styles.saveButtonText}>Adicionar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setAddValueModal(false)}
-                    style={{ padding: 10 }}
-                  >
-                    <Text style={{ color: Colors.white, textAlign: "center" }}>
-                      Cancelar
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Adicionar valor</Text>
+                <TextInput
+                  placeholder="Digite o valor"
+                  placeholderTextColor="#555"
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={addAmount}
+                  onChangeText={setAddAmount}
+                />
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleAddValue}
+                >
+                  <Text style={styles.saveButtonText}>Adicionar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setAddValueModal(false)}
+                  style={{ padding: 10 }}
+                >
+                  <Text style={{ color: Colors.white, textAlign: "center" }}>
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </Modal>
@@ -571,8 +637,6 @@ goals.forEach((goal) => {
     </>
   );
 };
-
-export default GoalsScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, padding: 20 },
@@ -591,12 +655,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 40,
   },
-  emptyText: {
-    color: Colors.text,
-    fontSize: 20,
-    fontWeight: "700",
-    textAlign: "center",
-  },
+  emptyText: { color: "#aaa", fontSize: 16 },
   emptySubText: {
     color: Colors.textSecondary,
     fontSize: 16,
@@ -616,46 +675,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  goalTitle: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  goalRemaining: {
-    color: "#fff",
-    fontSize: 13,
-  },
-  goalDesc: {
-    color: "#f8f8f8",
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  descAndSavingRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-    gap: 8,
-  },
-  inlineSavingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  savingText: {
-    color: Colors.white,
-    fontSize: 13,
-  },
+  goalTitle: { color: Colors.white, fontSize: 16, fontWeight: "bold" },
+  goalRemaining: { color: "#fff", fontSize: 13 },
+  goalDesc: { color: "#f8f8f8", fontSize: 13, marginBottom: 4 },
   progressBar: {
     height: 18,
     backgroundColor: "#fff8c2",
     borderRadius: 10,
     overflow: "hidden",
   },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#6b4d1f",
-  },
+  progressFill: { height: "100%", backgroundColor: "#6b4d1f" },
   progressTextRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -706,11 +735,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
   },
-  colorLabel: {
-    color: Colors.white,
-    marginBottom: 6,
-    fontSize: 14,
-  },
+  colorLabel: { color: Colors.white, marginBottom: 6, fontSize: 14 },
   colorRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -723,14 +748,17 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
   },
-  selectedColor: {
-    borderColor: Colors.white,
-  },
+  selectedColor: { borderColor: Colors.white },
   saveButton: {
     backgroundColor: Colors.tintcolor,
     padding: 10,
     borderRadius: 10,
     marginTop: 10,
+  },
+  saveButtonText: {
+    color: Colors.white,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   deleteButton: {
     backgroundColor: "#e63946",
@@ -738,12 +766,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 8,
   },
-  saveButtonText: {
-    color: Colors.white,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  headerAddButton: {
-    padding: 4,
+  headerAddButton: { backgroundColor: "#fff3", borderRadius: 20, padding: 6 },
+  inlineSavingRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  savingText: { color: Colors.white, fontSize: 13 },
+  descAndSavingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+    gap: 8,
   },
 });
+
+export default GoalsScreen;

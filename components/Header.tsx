@@ -27,26 +27,27 @@ const Header = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 🔹 Linha superior com título e botões nos cantos */}
+      {/* Linha superior com botões laterais e título centralizado */}
       <View style={styles.topRow}>
         <TouchableOpacity onPress={() => {}} style={styles.sideButton}>
           <Text style={styles.btnText}>Transações</Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>SQUILL</Text>
+        {/* Centralizando título e boas-vindas */}
+        <View style={styles.centerContainer}>
+          <Text style={styles.title}>SQUILL</Text>
+          <Text style={styles.welcomeText}>
+            Bem-vindo{user ? `, ${user.nome}` : ""}
+          </Text>
+        </View>
 
         <TouchableOpacity
           onPress={resetarTudo}
           style={[styles.sideButton, styles.resetBtn]}
         >
-          <Text style={[styles.btnText, { color: "#ff6b6b" }]}>Resetar</Text>
+          <Text style={[styles.btnText, { color: "#ff0000ff" }]}>Logout</Text>
         </TouchableOpacity>
       </View>
-
-      {/* 🔹 Texto de boas-vindas alinhado à esquerda */}
-      <Text style={styles.welcomeText}>
-        Bem-vindo{user ? `, ${user.nome}` : ""}
-      </Text>
     </SafeAreaView>
   );
 };
@@ -58,8 +59,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderBottomWidth: 2,
     borderBottomColor: Colors.brown,
-    paddingTop: 5, // Reduzido de 10 para 5
-    paddingBottom: 4, // Reduzido de 8 para 4
+    paddingTop: 4,
+    paddingBottom: 2,
     paddingHorizontal: 15,
   },
   topRow: {
@@ -67,32 +68,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  centerContainer: {
+    alignItems: "center", // centraliza SQUILL + Bem-vindo
+  },
   title: {
-    fontSize: 40,
+    fontSize: 30,
     color: Colors.brown,
     letterSpacing: 2,
-    textAlign: "center",
-    alignItems: "center",
     fontWeight: "bold",
+    textAlign: "center",
   },
-
   welcomeText: {
     color: "#444",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
-    marginTop: 2, // Reduzido de 4 para 2
+    marginTop: 2,
     textAlign: "center",
   },
   sideButton: {
     borderColor: "#ccc",
     borderWidth: 1,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal:10,
+    borderRadius: 12,
   },
   btnText: {
     color: "#333",
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "600",
   },
   resetBtn: {
