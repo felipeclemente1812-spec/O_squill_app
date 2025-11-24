@@ -11,10 +11,9 @@ const HistoryScreen = () => {
       <View style={styles.container}>
         {/* Top Bar */}
         <View style={styles.headerRow}>
-          {/* ÍCONE REMOVIDO */}
-          <View style={{ width: 26 }} />
+          <View style={{ width: 20 }} />
           <Text style={styles.headerTitle}>SQUILL</Text>
-          <View style={{ width: 26 }} />
+          <View style={{ width: 20 }} />
         </View>
 
         <View style={styles.sectionTitleBox}>
@@ -63,58 +62,58 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    paddingTop: 55,
-    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingHorizontal: 16,
   },
 
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 8,
   },
 
   headerTitle: {
-    fontSize: 34, // AUMENTADO
+    fontSize: 26,
     fontWeight: "bold",
     color: Colors.brown,
   },
 
   sectionTitleBox: {
     backgroundColor: Colors.brown,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginBottom: 22,
+    marginBottom: 14,
   },
 
   sectionTitle: {
     color: Colors.white,
     textAlign: "center",
-    fontSize: 24, // AUMENTADO
+    fontSize: 20,
     fontWeight: "bold",
   },
 
   card: {
     backgroundColor: "#e6c6a8",
-    padding: 20,
+    padding: 14,
     borderRadius: 12,
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 2,
     borderColor: Colors.brown,
   },
 
   cardTitle: {
-    fontSize: 20, // AUMENTADO
+    fontSize: 18,
     fontWeight: "bold",
     color: Colors.brown,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   cardText: {
-    fontSize: 16, // AUMENTADO
+    fontSize: 14,
     color: Colors.text,
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
   },
 });

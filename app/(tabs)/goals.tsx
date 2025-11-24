@@ -18,6 +18,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useSquill } from "@/context/SquillContext";
+
 
 export interface Goal {
   id: string;

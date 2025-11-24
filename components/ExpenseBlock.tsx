@@ -43,10 +43,25 @@ const INPUT_FONT = SCREEN_WIDTH < 360 ? 12 : 14;
 const categories = [
   { key: "house", label: "Casa", icon: Icons.house, color: Colors.house },
   { key: "car", label: "Mobilidade", icon: Icons.car, color: Colors.car },
-  { key: "fone", label: "Música / Streaming", icon: Icons.fone, color: Colors.fone },
-  { key: "food", label: "Comida (iFood)", icon: Icons.food, color: Colors.food },
+  {
+    key: "fone",
+    label: "Música / Streaming",
+    icon: Icons.fone,
+    color: Colors.fone,
+  },
+  {
+    key: "food",
+    label: "Comida (iFood)",
+    icon: Icons.food,
+    color: Colors.food,
+  },
   { key: "shop", label: "Mercado", icon: Icons.shop, color: Colors.shop },
-  { key: "clothes", label: "Roupas", icon: Icons.clothes, color: Colors.clothes },
+  {
+    key: "clothes",
+    label: "Roupas",
+    icon: Icons.clothes,
+    color: Colors.clothes,
+  },
   { key: "health", label: "Saúde", icon: Icons.health, color: Colors.health },
   { key: "game", label: "Jogos", icon: Icons.game, color: Colors.game },
   { key: "tech", label: "Tecnologia", icon: Icons.tech, color: Colors.tech },
@@ -55,7 +70,8 @@ const categories = [
 ];
 
 const getCategory = (category: string) =>
-  categories.find((c) => c.key === category) || categories[categories.length - 1];
+  categories.find((c) => c.key === category) ||
+  categories[categories.length - 1];
 
 const STORAGE_KEY = "@expenses";
 
@@ -68,7 +84,7 @@ const AnimatedExpenseBlock = ({ item, openEditModal }: any) => {
       toValue: 1,
       useNativeDriver: true,
       friction: 4,
-      tension:50,
+      tension: 50,
     }).start();
   }, []);
 
@@ -113,11 +129,13 @@ const AnimatedExpenseBlock = ({ item, openEditModal }: any) => {
 const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
   const [expenses, setExpenses] = React.useState<ExpenseType[]>([]);
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [editingExpense, setEditingExpense] = React.useState<ExpenseType | null>(null);
+  const [editingExpense, setEditingExpense] =
+    React.useState<ExpenseType | null>(null);
   const [newName, setNewName] = React.useState("");
   const [newAmount, setNewAmount] = React.useState("");
   const [newDate, setNewDate] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("quest");
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<string>("quest");
 
   React.useEffect(() => {
     const loadExpenses = async () => {
@@ -163,7 +181,13 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
     if (editingExpense) {
       updatedExpenses = expenses.map((e) =>
         e.id === editingExpense.id
-          ? { ...e, name: newName, amount: newAmount, date: newDate, category: selectedCategory }
+          ? {
+              ...e,
+              name: newName,
+              amount: newAmount,
+              date: newDate,
+              category: selectedCategory,
+            }
           : e
       );
     } else {
@@ -188,11 +212,43 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
     setEditingExpense(null);
   };
 
+  // Retorna domingo e sábado da semana atual
+  const getCurrentWeekRange = () => {
+    const today = new Date();
+    const day = today.getDay(); // 0 = domingo
+
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - day);
+
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+
+    // Zera horário pra evitar erro de timezone
+    sunday.setHours(0, 0, 0, 0);
+    saturday.setHours(23, 59, 59, 999);
+
+    return { sunday, saturday };
+  };
+
+  // Converte "dd/mm/yy" em Date real
+  const parseDate = (str: string) => {
+    const [dd, mm, yy] = str.split("/").map(Number);
+    return new Date(2000 + yy, mm - 1, dd);
+  };
+
   return (
     <View style={styles.container}>
       <View style={{ marginVertical: 5, width: "100%" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-          <Text style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <Text
+            style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}
+          >
             Despesas
           </Text>
 
@@ -212,7 +268,9 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
             ]}
           >
             <Feather name="plus" size={18} color="#ccc" />
-            <Text style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}>
+            <Text
+              style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}
+            >
               Adicionar
             </Text>
           </TouchableOpacity>
@@ -230,27 +288,63 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
         </Text>
 
         {/* LISTA COM ANIMAÇÃO */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-          {expenses.map((item) => (
-            <AnimatedExpenseBlock key={item.id} item={item} openEditModal={openEditModal} />
-          ))}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+         {expenses
+  .filter((item) => {
+    const { sunday, saturday } = getCurrentWeekRange();
+    const d = parseDate(item.date);
+    return d >= sunday && d <= saturday;
+  })
+  .map((item) => (
+    <AnimatedExpenseBlock key={item.id} item={item} openEditModal={openEditModal} />
+  ))}
+
         </ScrollView>
       </View>
 
       {/* ---------------- MODAL ---------------- */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                  <Text style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <Text
+                    style={{
+                      color: Colors.white,
+                      fontSize: 16,
+                      marginBottom: 10,
+                    }}
+                  >
                     {editingExpense ? "Editar gasto" : "Adicionar gasto"}
                   </Text>
 
-                  <TextInput placeholder="Nome" placeholderTextColor="#aaa" style={styles.input} value={newName} onChangeText={setNewName} />
+                  <TextInput
+                    placeholder="Nome"
+                    placeholderTextColor="#aaa"
+                    style={styles.input}
+                    value={newName}
+                    onChangeText={setNewName}
+                  />
 
-                  <TextInput placeholder="Valor" placeholderTextColor="#aaa" keyboardType="numeric" style={styles.input} value={newAmount} onChangeText={setNewAmount} />
+                  <TextInput
+                    placeholder="Valor"
+                    placeholderTextColor="#aaa"
+                    keyboardType="numeric"
+                    style={styles.input}
+                    value={newAmount}
+                    onChangeText={setNewAmount}
+                  />
 
                   <TextInput
                     placeholder="Data"
@@ -264,13 +358,24 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
 
                       let formatted = "";
                       if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
-                      if (cleaned.length >= 3) formatted = cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
-                      if (cleaned.length >= 5) formatted += "/" + cleaned.slice(4, 6);
+                      if (cleaned.length >= 3)
+                        formatted =
+                          cleaned.slice(0, 2) + "/" + cleaned.slice(2, 4);
+                      if (cleaned.length >= 5)
+                        formatted += "/" + cleaned.slice(4, 6);
                       setNewDate(formatted);
                     }}
                   />
 
-                  <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>Categoria:</Text>
+                  <Text
+                    style={{
+                      color: Colors.white,
+                      marginTop: 10,
+                      marginBottom: 5,
+                    }}
+                  >
+                    Categoria:
+                  </Text>
 
                   <FlatList
                     data={categories}
@@ -286,29 +391,54 @@ const ExpenseBlock: React.FC<ExpenseBlockProps> = ({ onChange }) => {
                           onPress={() => setSelectedCategory(item.key)}
                           style={[
                             styles.categoryButton,
-                            { backgroundColor: selected ? Colors.tintcolor : Colors.grey },
+                            {
+                              backgroundColor: selected
+                                ? Colors.tintcolor
+                                : Colors.grey,
+                            },
                           ]}
                         >
-                          <IconComp width={30} height={30} color={Colors.white} />
+                          <IconComp
+                            width={30}
+                            height={30}
+                            color={Colors.white}
+                          />
                           <Text style={styles.categoryLabel}>{item.label}</Text>
                         </TouchableOpacity>
                       );
                     }}
                   />
 
-                  <TouchableOpacity onPress={handleSave} style={styles.addButton}>
-                    <Text style={{ color: Colors.white, textAlign: "center" }}>Salvar</Text>
+                  <TouchableOpacity
+                    onPress={handleSave}
+                    style={styles.addButton}
+                  >
+                    <Text style={{ color: Colors.white, textAlign: "center" }}>
+                      Salvar
+                    </Text>
                   </TouchableOpacity>
 
                   {editingExpense && (
-                    <TouchableOpacity onPress={() => deleteExpense(editingExpense.id)} style={styles.deleteButton}>
-                      <Text style={{ color: Colors.white, textAlign: "center" }}>Excluir</Text>
+                    <TouchableOpacity
+                      onPress={() => deleteExpense(editingExpense.id)}
+                      style={styles.deleteButton}
+                    >
+                      <Text
+                        style={{ color: Colors.white, textAlign: "center" }}
+                      >
+                        Excluir
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </ScrollView>
 
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ padding: 10 }}>
-                  <Text style={{ color: Colors.white, textAlign: "center" }}>Cancelar</Text>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={{ padding: 10 }}
+                >
+                  <Text style={{ color: Colors.white, textAlign: "center" }}>
+                    Cancelar
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

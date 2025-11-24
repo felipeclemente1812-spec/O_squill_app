@@ -1,10 +1,12 @@
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
-import 'react-native-reanimated';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { useColorScheme } from "react-native";
+import "react-native-reanimated";
+
+import { SquillProvider } from "@/context/SquillContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,7 +15,7 @@ function MainLayout() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // pequeno delay pra garantir que o AsyncStorage carregue
+    // pequeno delay para garantir que o AsyncStorage carregue
     const timer = setTimeout(() => setIsLoading(false), 400);
     return () => clearTimeout(timer);
   }, []);
@@ -33,9 +35,8 @@ function MainLayout() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -47,7 +48,10 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <MainLayout />
+      {/* Agora TODO O APP consegue acessar o Squill (mini avatar etc.) */}
+      <SquillProvider>
+        <MainLayout />
+      </SquillProvider>
     </AuthProvider>
   );
 }

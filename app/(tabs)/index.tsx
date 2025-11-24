@@ -28,6 +28,8 @@ const STORAGE_KEY_INCOMES = "@incomes";
 
 const { width } = Dimensions.get("window");
 
+const GRAPH_OFFSET = width * 0.12; // espaço definitivo pro gráfico
+
 const Page = () => {
   const [expenses, setExpenses] = useState<ExpenseType[]>([]);
   const [incomes, setIncomes] = useState<IncomeType[]>([]);
@@ -83,6 +85,7 @@ const Page = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
       <Header />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -92,7 +95,7 @@ const Page = () => {
           contentContainerStyle={[
             styles.scrollContainer,
             { paddingBottom: 80 },
-          ]} // 👈 aqui
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -131,6 +134,7 @@ const Page = () => {
                         (últimos 7 dias)
                       </Text>
                     </Text>
+
                     <TouchableOpacity
                       style={{ marginLeft: 6, marginTop: -20 }}
                       onPress={() => {
@@ -141,7 +145,7 @@ const Page = () => {
                       }}
                     >
                       <Ionicons
-                        name="swap-vertical-outline" // ícone fixo
+                        name="swap-vertical-outline"
                         size={22}
                         color={Colors.brown}
                       />
@@ -160,27 +164,25 @@ const Page = () => {
                   </Text>
                 </View>
 
-                {/* 🔹 Gráfico */}
-                <View style={styles.dashboardWrapper}>
-                  <View style={styles.dashboardWrapper}>
-                    <Dashboard
-                      expenses={expenses}
-                      incomes={incomes}
-                      dataType={dataType}
-                      selectedPeriod={selectedPeriod}
-                      selectedSlice={selectedSlice}
-                      onSelectSlice={(sliceId) => setSelectedSlice(sliceId)}
-                      setDataType={setDataType}
-                      setSelectedPeriod={setSelectedPeriod}
-                    />
-                  </View>
+                {/* 🔹 Gráfico (agora com espaço garantido!) */}
+                <View style={styles.graphContainer}>
+                  <Dashboard
+                    expenses={expenses}
+                    incomes={incomes}
+                    dataType={dataType}
+                    selectedPeriod={selectedPeriod}
+                    selectedSlice={selectedSlice}
+                    onSelectSlice={setSelectedSlice}
+                    setDataType={setDataType}
+                    setSelectedPeriod={setSelectedPeriod}
+                  />
                 </View>
               </View>
 
               {/* 🔹 Blocos */}
               {showExpenses ? (
                 <>
-                  <ExpenseBlock onChange={(data) => setExpenses(data)} />
+                  <ExpenseBlock onChange={setExpenses} />
                   <SpendingBlock
                     key="expenses"
                     storageKey="@expenses"
@@ -189,7 +191,7 @@ const Page = () => {
                 </>
               ) : (
                 <>
-                  <IncomeBlock onChange={(data) => setIncomes(data)} />
+                  <IncomeBlock onChange={setIncomes} />
                   <SpendingBlock
                     key="incomes"
                     storageKey="@incomes"
@@ -208,27 +210,33 @@ const Page = () => {
 export default Page;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
   scrollContainer: {
     flexGrow: 1,
   },
+
+  graphContainer: {
+    flex: 1,
+    minWidth: width * 0.35, // impede o gráfico de esmagar o texto
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 1, // permite reduzir o tamanho quando faltar espaço
+  },
+
   container: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+
   headerSection: {
     flexDirection: "row",
+    alignItems: "center", // garante alinhamento vertical REAL
     justifyContent: "space-between",
-    alignItems: "center",
     backgroundColor: Colors.lightBackground,
     borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    marginTop: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    marginTop: 2,
     marginBottom: 20,
     shadowColor: Colors.darkBrown,
     shadowOffset: { width: 0, height: 2 },
@@ -237,32 +245,10 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: Colors.brown,
   },
+
   totalBlock: {
-    flex: 3, // mais espaço para o texto
+    flex: 1,
+    minWidth: width * 0.45, // garante que ele nunca fique minúsculo
     justifyContent: "center",
-  },
-  dashboardWrapper: {
-    flex: 2, // proporcional ao texto
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  titleText: {
-    color: Colors.text,
-    fontSize: 20,
-  },
-  titleHighlight: {
-    color: Colors.brown,
-    fontWeight: "700",
-  },
-  subtitleText: {
-    color: Colors.textSecondary,
-    fontSize: 12,
-    marginTop: 4,
-  },
-  totalValue: {
-    color: Colors.darkBrown,
-    fontSize: 36,
-    fontWeight: "700",
-    marginTop: 4,
   },
 });

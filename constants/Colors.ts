@@ -13,6 +13,10 @@ const Colors = {
   text: '#3E2412',       // texto principal
   textSecondary: '#795b3eff', // texto secundário
 
+  // 🔹 blocos
+  fundoAcessorio: '#da965aff',
+  bordaDeAcessorio: '#7E4412',
+
   // 🔹 Despesas / categorias
   house: "#8B5A2B",      // marrom bronze (casa)
   car: "#B8860B",        // dourado escuro (carro)

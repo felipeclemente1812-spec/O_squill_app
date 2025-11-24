@@ -1,24 +1,24 @@
+import Colors from "@/constants/Colors";
+import * as Icons from "@/constants/icons";
+import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React from "react";
 import {
+  Animated,
+  Dimensions,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  Pressable,
-  Modal,
   TextInput,
-  ScrollView,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
-  Keyboard,
-  Dimensions,
-  Animated
+  View,
 } from "react-native";
-import React from "react";
-import Colors from "@/constants/Colors";
-import { Feather } from "@expo/vector-icons";
-import * as Icons from "@/constants/icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface IncomeType {
   id: string;
@@ -39,14 +39,25 @@ const MODAL_WIDTH = SCREEN_WIDTH < 360 ? "95%" : "90%";
 const INPUT_FONT = SCREEN_WIDTH < 360 ? 12 : 14;
 
 const categories = [
-  { key: "salario", label: "Salário", icon: Icons.salario, color: Colors.salario },
-  { key: "presente", label: "Presente", icon: Icons.presente, color: Colors.presente },
+  {
+    key: "salario",
+    label: "Salário",
+    icon: Icons.salario,
+    color: Colors.salario,
+  },
+  {
+    key: "presente",
+    label: "Presente",
+    icon: Icons.presente,
+    color: Colors.presente,
+  },
   { key: "bonus", label: "Bônus", icon: Icons.bonus, color: Colors.bonus },
   { key: "other", label: "Outros", icon: Icons.quest, color: Colors.tvIncome },
 ];
 
 const getCategory = (category: string) =>
-  categories.find((c) => c.key === category) || categories[categories.length - 1];
+  categories.find((c) => c.key === category) ||
+  categories[categories.length - 1];
 
 const STORAGE_KEY = "@incomes";
 
@@ -98,15 +109,40 @@ const AnimatedIncomeBlock = ({ item, openEditModal }: any) => {
     </Animated.View>
   );
 };
+// Retorna domingo e sábado da semana atual
+const getCurrentWeekRange = () => {
+  const today = new Date();
+  const day = today.getDay(); // 0 = domingo
+
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - day);
+
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+
+  sunday.setHours(0, 0, 0, 0);
+  saturday.setHours(23, 59, 59, 999);
+
+  return { sunday, saturday };
+};
+
+// Converte "dd/mm/yy" para Date real
+const parseDate = (str: string) => {
+  const [dd, mm, yy] = str.split("/").map(Number);
+  return new Date(2000 + yy, mm - 1, dd);
+};
 
 const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
   const [income, setIncome] = React.useState<IncomeType[]>([]);
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [editingIncome, setEditingIncome] = React.useState<IncomeType | null>(null);
+  const [editingIncome, setEditingIncome] = React.useState<IncomeType | null>(
+    null
+  );
   const [newName, setNewName] = React.useState("");
   const [newAmount, setNewAmount] = React.useState("");
   const [newDate, setNewDate] = React.useState("");
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("other");
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<string>("other");
 
   React.useEffect(() => {
     const loadIncome = async () => {
@@ -152,7 +188,13 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
     if (editingIncome) {
       updatedIncome = income.map((e) =>
         e.id === editingIncome.id
-          ? { ...e, name: newName, amount: newAmount, date: newDate, category: selectedCategory }
+          ? {
+              ...e,
+              name: newName,
+              amount: newAmount,
+              date: newDate,
+              category: selectedCategory,
+            }
           : e
       );
     } else {
@@ -180,8 +222,18 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
   return (
     <View style={styles.container}>
       <View style={{ marginVertical: 5, width: "100%" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-          <Text style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}>Receitas</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <Text
+            style={{ color: Colors.text, fontSize: 22, fontWeight: "bold" }}
+          >
+            Receitas
+          </Text>
           <Pressable
             onPress={openAddModal}
             style={[
@@ -198,7 +250,11 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
             ]}
           >
             <Feather name="plus" size={18} />
-            <Text style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}>Adicionar</Text>
+            <Text
+              style={{ color: Colors.text, fontWeight: "700", fontSize: 14 }}
+            >
+              Adicionar
+            </Text>
           </Pressable>
         </View>
 
@@ -218,13 +274,19 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
         >
-          {income.map((item) => (
-            <AnimatedIncomeBlock
-              key={item.id}
-              item={item}
-              openEditModal={openEditModal}
-            />
-          ))}
+          {income
+            .filter((item) => {
+              const { sunday, saturday } = getCurrentWeekRange();
+              const d = parseDate(item.date);
+              return d >= sunday && d <= saturday;
+            })
+            .map((item) => (
+              <AnimatedIncomeBlock
+                key={item.id}
+                item={item}
+                openEditModal={openEditModal}
+              />
+            ))}
         </ScrollView>
       </View>
 
@@ -246,7 +308,13 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                   keyboardShouldPersistTaps="handled"
                   contentContainerStyle={{ paddingBottom: 20 }}
                 >
-                  <Text style={{ color: Colors.white, fontSize: 16, marginBottom: 10 }}>
+                  <Text
+                    style={{
+                      color: Colors.white,
+                      fontSize: 16,
+                      marginBottom: 10,
+                    }}
+                  >
                     {editingIncome ? "Editar receita" : "Adicionar receita"}
                   </Text>
 
@@ -277,13 +345,21 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                       let cleaned = text.replace(/\D/g, "").slice(0, 6);
                       let formatted = "";
                       if (cleaned.length >= 1) formatted += cleaned.slice(0, 2);
-                      if (cleaned.length >= 3) formatted += "/" + cleaned.slice(2, 4);
-                      if (cleaned.length >= 5) formatted += "/" + cleaned.slice(4, 6);
+                      if (cleaned.length >= 3)
+                        formatted += "/" + cleaned.slice(2, 4);
+                      if (cleaned.length >= 5)
+                        formatted += "/" + cleaned.slice(4, 6);
                       setNewDate(formatted);
                     }}
                   />
 
-                  <Text style={{ color: Colors.white, marginTop: 10, marginBottom: 5 }}>
+                  <Text
+                    style={{
+                      color: Colors.white,
+                      marginTop: 10,
+                      marginBottom: 5,
+                    }}
+                  >
                     Categoria:
                   </Text>
 
@@ -300,7 +376,11 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                           onPress={() => setSelectedCategory(item.key)}
                           style={[
                             styles.categoryButton,
-                            { backgroundColor: selected ? Colors.tintcolor : Colors.grey },
+                            {
+                              backgroundColor: selected
+                                ? Colors.tintcolor
+                                : Colors.grey,
+                            },
                           ]}
                         >
                           <IconComp width={30} height={30} color={"#000"} />
@@ -311,7 +391,9 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                   />
 
                   <Pressable onPress={handleSave} style={styles.addButton}>
-                    <Text style={{ color: Colors.white, textAlign: "center" }}>Salvar</Text>
+                    <Text style={{ color: Colors.white, textAlign: "center" }}>
+                      Salvar
+                    </Text>
                   </Pressable>
 
                   {editingIncome && (
@@ -319,13 +401,22 @@ const IncomeBlock: React.FC<IncomeBlockProps> = ({ onChange }) => {
                       onPress={() => deleteIncome(editingIncome.id)}
                       style={styles.deleteButton}
                     >
-                      <Text style={{ color: Colors.white, textAlign: "center" }}>Excluir</Text>
+                      <Text
+                        style={{ color: Colors.white, textAlign: "center" }}
+                      >
+                        Excluir
+                      </Text>
                     </Pressable>
                   )}
                 </ScrollView>
 
-                <Pressable onPress={() => setModalVisible(false)} style={{ padding: 10 }}>
-                  <Text style={{ color: Colors.white, textAlign: "center" }}>Cancelar</Text>
+                <Pressable
+                  onPress={() => setModalVisible(false)}
+                  style={{ padding: 10 }}
+                >
+                  <Text style={{ color: Colors.white, textAlign: "center" }}>
+                    Cancelar
+                  </Text>
                 </Pressable>
               </View>
             </View>
