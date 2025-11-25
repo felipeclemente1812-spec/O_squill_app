@@ -14,21 +14,6 @@ import {
   Animated,
 } from "react-native";
 
-import {
-  car,
-  clothes,
-  fone,
-  food,
-  game,
-  gym,
-  health,
-  house,
-  quest,
-  shop,
-  tech,
-  tv,
-} from "@/constants/icons";
-
 export interface ItemType {
   id: string;
   name: string;
@@ -268,7 +253,8 @@ const SpendingBlock = ({ storageKey, title }: SpendingBlockProps) => {
               color: Colors.text,
               fontSize: 22,
               fontWeight: "800",
-              marginLeft: 15,
+              marginLeft: 18,
+              flex:1,
             }}
           >
             Total: R$ {totalMonth.toFixed(2)}

@@ -64,7 +64,7 @@ const InfoScreen = () => {
                       <TouchableOpacity
                         style={styles.linkButton}
                         onPress={() =>
-                          Linking.openURL("https://wordwall.net/pt/community")
+                          Linking.openURL("https://wordwall.net/pt-br/community/educa%C3%A7%C3%A3o-financeira ")
                         }
                       >
                         <Text style={styles.linkButtonText}>Acessar Wordwall</Text>

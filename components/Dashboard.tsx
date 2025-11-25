@@ -170,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             showGradient
             sectionAutoFocus={false} // desativa foco automático do gifted-charts
             radius={width * 0.20} // 25% da largura da tela
-            innerRadius={width * 0.11} // 15% da largura
+            innerRadius={width * 0.09} // 15% da largura
             innerCircleColor={Colors.background}
             centerLabelComponent={() => {
               if (!selectedSlice) {

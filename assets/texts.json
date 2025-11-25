@@ -1,90 +1,100 @@
 {
-    "juros_simples_compostos": {
-        "titulo": "Juros Simples e Compostos: Simulações de Poupança e Investimentos",
-        "descricao": "Os juros são a recompensa que você ganha ao investir seu dinheiro ou o custo que paga ao pegar um empréstimo. Existem dois tipos principais de juros: simples e compostos.",
-        "topicos": [
-            {
-                "subtitulo": "Juros Simples",
-                "conteudo": "Nesse tipo, os juros são calculados apenas sobre o valor que você investiu. Por exemplo, se você colocar R$ 1.000 a uma taxa de 10% ao ano por 5 anos, ao final terá R$ 1.500. Isso significa que você ganhou R$ 500 em juros, ou R$ 100 a cada ano."
-            },
-            {
-                "subtitulo": "Juros Compostos",
-                "conteudo": "Aqui, os juros são calculados sobre o valor total acumulado, o que faz com que o seu dinheiro cresça mais rápido. Usando o mesmo exemplo de R$ 1.000 a 10% por 5 anos, ao final você teria R$ 1.610,51. Nesse caso, seu lucro seria de cerca de R$ 610,51, que é mais do que com os juros simples."
-            },
-            {
-                "subtitulo": "Importância",
-                "conteudo": "Esses conceitos são importantes em investimentos. A poupança, por exemplo, usa juros compostos, embora com uma taxa menor. Outros investimentos, como CDBs e Tesouro Direto, também funcionam assim e podem oferecer retornos melhores."
-            }
-        ]
-    },
-    "regra_50_30_20": {
-        "titulo": "Planejamento com base na regra 50/30/20",
-        "descricao": "A regra 50/30/20 é uma ferramenta prática de planejamento financeiro que ajuda a organizar seu dinheiro de forma equilibrada, dividindo sua renda líquida em três categorias.",
-        "topicos": [
-            {
-                "subtitulo": "50% para Necessidades",
-                "conteudo": "Inclui gastos essenciais para sua sobrevivência, como moradia (aluguel, IPTU), contas fixas (água, luz, internet) e alimentação (supermercado). O ideal é que esses gastos não ultrapassem metade da sua renda."
-            },
-            {
-                "subtitulo": "30% para Desejos",
-                "conteudo": "Abrange despesas que melhoram sua qualidade de vida, mas que não são essenciais, como lazer (restaurantes, cinema) e compras pessoais (roupas, eletrônicos). Esta categoria é mais flexível e pode ser ajustada se necessário."
-            },
-            {
-                "subtitulo": "20% para Poupança e Pagamento de Dívidas",
-                "conteudo": "Destinado ao seu futuro financeiro, inclui a criação de uma reserva de emergência e investimentos. Priorize o pagamento de dívidas com juros altos antes de investir."
-            }
-        ]
-    },
-    "importancia_poupar_investir": {
-        "titulo": "A importância de poupar e investir",
-        "descricao": "Poupar e investir reside em criar segurança financeira, realizar objetivos e construir riqueza a longo prazo. Poupar estabelece uma reserva para imprevistos e despesas imediatas, enquanto investir utiliza esse dinheiro para gerar retornos, combatendo a inflação.",
-        "topicos": [
-            {
-                "subtitulo": "Crie um fundo de emergência",
-                "conteudo": "Tenha uma reserva para imprevistos, como desemprego e problemas de saúde. O ideal é ter o equivalente a 3 a 6 meses de suas despesas guardadas."
-            },
-            {
-                "subtitulo": "Quite dívidas",
-                "conteudo": "Economizar ajuda a pagar dívidas, principalmente as de juros mais altos. Isso também evita que você se endivide ainda mais."
-            },
-            {
-                "subtitulo": "Comece a investir",
-                "conteudo": "Com dinheiro guardado, você pode começar a investir e fazer seu dinheiro render mais."
-            },
-            {
-                "subtitulo": "Poupe de dinheiro",
-                "conteudo": "Poupar para realizar seus sonhos, comprar um carro ou um apartamento, ou para sua faculdade, são ótimas motivações para economizar."
-            }
-        ]
-    },
-    "como_fazer_orcamento": {
-        "titulo": "Como fazer um orçamento pessoal",
-        "descricao": "Fazer um orçamento pessoal é uma das principais ferramentas da educação financeira. Siga estes seis passos para começar:",
-        "topicos": [
-            {
-                "subtitulo": "Objetivo",
-                "conteudo": "Saiba a razão (poupar, pagar dívidas)."
-            },
-            {
-                "subtitulo": "Ferramenta",
-                "conteudo": "Escolha onde registrar (app, planilha, caderno)."
-            },
-            {
-                "subtitulo": "Receitas",
-                "conteudo": "Anote toda a sua renda líquida."
-            },
-            {
-                "subtitulo": "Gastos",
-                "conteudo": "Registre e categorize (Fixas, Variáveis, Pequenos Gastos)."
-            },
-            {
-                "subtitulo": "Análise",
-                "conteudo": "Compare receitas e despesas. Identifique e corte excessos."
-            },
-            {
-                "subtitulo": "Acompanhamento",
-                "conteudo": "Mantenha a atualização constante para controle a longo prazo."
-            }
-        ]
-    }
+  "juros_simples_compostos": {
+    "titulo": "Juros Simples e Compostos: Simulações de Poupança e Investimentos",
+    "descricao": "Os juros são a recompensa que você ganha ao investir seu dinheiro ou o custo que paga ao pegar um empréstimo. Existem dois tipos principais de juros: simples e compostos.",
+    "topicos": [
+      {
+        "subtitulo": "Juros Simples",
+        "conteudo": "Nesse tipo, os juros são calculados apenas sobre o valor que você investiu. Por exemplo, se você colocar R$ 1.000 a uma taxa de 10% ao ano por 5 anos, ao final terá R$ 1.500. Isso significa que você ganhou R$ 500 em juros, ou R$ 100 a cada ano."
+      },
+      {
+        "subtitulo": "Juros Compostos",
+        "conteudo": "Aqui, os juros são calculados sobre o valor total acumulado, o que faz com que o seu dinheiro cresça mais rápido. Usando o mesmo exemplo de R$ 1.000 a 10% por 5 anos, ao final você teria R$ 1.610,51. Nesse caso, seu lucro seria de cerca de R$ 610,51, que é mais do que com os juros simples."
+      },
+      {
+        "subtitulo": "Importância",
+        "conteudo": "Esses conceitos são importantes em investimentos. A poupança, por exemplo, usa juros compostos, embora com uma taxa menor. Outros investimentos, como CDBs e Tesouro Direto, também funcionam assim e podem oferecer retornos melhores."
+      }
+    ]
+  },
+  "regra_50_30_20": {
+    "titulo": "Planejamento com base na regra 50/30/20",
+    "descricao": "A regra 50/30/20 é uma ferramenta prática de planejamento financeiro que ajuda a organizar seu dinheiro de forma equilibrada, dividindo sua renda líquida em três categorias.",
+    "topicos": [
+      {
+        "subtitulo": "50% para Necessidades",
+        "conteudo": "Inclui gastos essenciais para sua sobrevivência, como moradia (aluguel, IPTU), contas fixas (água, luz, internet) e alimentação (supermercado). O ideal é que esses gastos não ultrapassem metade da sua renda."
+      },
+      {
+        "subtitulo": "30% para Desejos",
+        "conteudo": "Abrange despesas que melhoram sua qualidade de vida, mas que não são essenciais, como lazer (restaurantes, cinema) e compras pessoais (roupas, eletrônicos). Esta categoria é mais flexível e pode ser ajustada se necessário."
+      },
+      {
+        "subtitulo": "20% para Poupança e Pagamento de Dívidas",
+        "conteudo": "Destinado ao seu futuro financeiro, inclui a criação de uma reserva de emergência e investimentos. Priorize o pagamento de dívidas com juros altos antes de investir."
+      }
+    ]
+  },
+  "importancia_poupar_investir": {
+    "titulo": "A importância de poupar e investir",
+    "descricao": "Poupar e investir reside em criar segurança financeira, realizar objetivos e construir riqueza a longo prazo. Poupar estabelece uma reserva para imprevistos e despesas imediatas, enquanto investir utiliza esse dinheiro para gerar retornos, combatendo a inflação.",
+    "topicos": [
+      {
+        "subtitulo": "Crie um fundo de emergência",
+        "conteudo": "Tenha uma reserva para imprevistos, como desemprego e problemas de saúde. O ideal é ter o equivalente a 3 a 6 meses de suas despesas guardadas."
+      },
+      {
+        "subtitulo": "Quite dívidas",
+        "conteudo": "Economizar ajuda a pagar dívidas, principalmente as de juros mais altos. Isso também evita que você se endivide ainda mais."
+      },
+      {
+        "subtitulo": "Comece a investir",
+        "conteudo": "Com dinheiro guardado, você pode começar a investir e fazer seu dinheiro render mais."
+      },
+      {
+        "subtitulo": "Poupe de dinheiro",
+        "conteudo": "Poupar para realizar seus sonhos, comprar um carro ou um apartamento, ou para sua faculdade, são ótimas motivações para economizar."
+      }
+    ]
+  },
+  "como_fazer_orcamento": {
+    "titulo": "Como fazer um orçamento pessoal",
+    "descricao": "Fazer um orçamento pessoal é uma das principais ferramentas da educação financeira. Siga estes seis passos para começar:",
+    "topicos": [
+      {
+        "subtitulo": "Objetivo",
+        "conteudo": "Saiba a razão (poupar, pagar dívidas)."
+      },
+      {
+        "subtitulo": "Ferramenta",
+        "conteudo": "Escolha onde registrar (app, planilha, caderno)."
+      },
+      {
+        "subtitulo": "Receitas",
+        "conteudo": "Anote toda a sua renda líquida."
+      },
+      {
+        "subtitulo": "Gastos",
+        "conteudo": "Registre e categorize (Fixas, Variáveis, Pequenos Gastos)."
+      },
+      {
+        "subtitulo": "Análise",
+        "conteudo": "Compare receitas e despesas. Identifique e corte excessos."
+      },
+      {
+        "subtitulo": "Acompanhamento",
+        "conteudo": "Mantenha a atualização constante para controle a longo prazo."
+      }
+    ]
+  },
+  "recomendacoes": {
+    "titulo": "Recomendações",
+    "descricao": "Aqui estão algumas recomendações e ferramentas úteis:",
+    "topicos": [
+      {
+        "subtitulo": "Wordwall",
+        "conteudo": "Você pode acessar atividades interativas e educativas diretamente no Wordwall."
+      }
+    ]
+  }
 }

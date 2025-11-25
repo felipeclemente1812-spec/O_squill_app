@@ -25,9 +25,7 @@ const HistoryScreen = () => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Nossa Missão</Text>
             <Text style={styles.cardText}>
-              Capacitar jovens, por meio de conteúdos educativos, a desenvolver
-              educação financeira de forma prática, acessível e interativa,
-              promovendo planejamento, autonomia e consumo consciente.
+              Capacitar jovens com a educação financeira prática e interativa para construir um consumo consciente
             </Text>
           </View>
 
@@ -35,9 +33,7 @@ const HistoryScreen = () => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Nossos Valores</Text>
             <Text style={styles.cardText}>
-              Capacitar jovens, por meio de conteúdos educativos, a desenvolver
-              educação financeira de forma prática, acessível e interativa,
-              promovendo planejamento, autonomia e consumo consciente.
+              Oferecemos conhecimento, engajamento contínuo e decisões conscientes via gamificação e inovação
             </Text>
           </View>
 
@@ -45,9 +41,7 @@ const HistoryScreen = () => {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Nossa Visão</Text>
             <Text style={styles.cardText}>
-              Capacitar jovens, por meio de conteúdos educativos, a desenvolver
-              educação financeira de forma prática, acessível e interativa,
-              promovendo planejamento, autonomia e consumo consciente.
+              Ser reconhecidos por prestar suporte e incentivar hábitos saudáveis, preparando para o futuro financeiro
             </Text>
           </View>
         </ScrollView>
